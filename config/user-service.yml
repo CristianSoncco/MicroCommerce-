@@ -1,0 +1,25 @@
+# Configuración para User Service
+# Configuration for User Service
+
+server:
+  port: 8083
+
+spring:
+  application:
+    name: user-service
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: userdb
+
+jwt:
+  secret: ${JWT_SECRET:microcommerce-secret-key-change-in-production}
+  expiration: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
