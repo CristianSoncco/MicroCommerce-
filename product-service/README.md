@@ -18,6 +18,7 @@ Servicio de gestión de catálogo de productos para la plataforma MicroCommerce.
 - Spring Boot 3.2
 - Spring Data JPA
 - PostgreSQL 16
+- Redis 7 (Caching)
 - Spring Cloud Netflix Eureka Client
 - Spring Cloud Config Client
 - Lombok
@@ -29,6 +30,7 @@ Servicio de gestión de catálogo de productos para la plataforma MicroCommerce.
 
 - **Port | Puerto**: 8081
 - **Database | Base de Datos**: PostgreSQL (productdb)
+- **Cache | Caché**: Redis (localhost:6379)
 - **Eureka Registration | Registro en Eureka**: Yes | Sí
 - **Config Server**: Yes | Sí
 
@@ -113,9 +115,26 @@ CREATE TABLE products (
 
 ## Prerequisites | Prerequisitos
 
-### PostgreSQL Setup | Configuración de PostgreSQL
+### Docker Compose (Recommended | Recomendado)
 
-**Option 1: Using Docker | Opción 1: Usando Docker (Recomendado)**
+**EN:** Use Docker Compose to start PostgreSQL + Redis together:
+
+**ES:** Usa Docker Compose para iniciar PostgreSQL + Redis juntos:
+
+```bash
+# From project root | Desde la raíz del proyecto
+docker-compose -f docker-compose-dev.yml up -d
+
+# Verify services | Verificar servicios
+docker-compose -f docker-compose-dev.yml ps
+
+# Stop services | Detener servicios
+docker-compose -f docker-compose-dev.yml down
+```
+
+### PostgreSQL Setup (Manual) | Configuración de PostgreSQL (Manual)
+
+**Option 1: Using Docker | Opción 1: Usando Docker**
 
 ```bash
 docker run --name postgres-product \
@@ -123,7 +142,7 @@ docker run --name postgres-product \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
   -p 5432:5432 \
-  -d postgres:16
+  -d postgres:16-alpine
 ```
 
 **Option 2: Local Installation | Opción 2: Instalación Local**
@@ -134,6 +153,27 @@ docker run --name postgres-product \
 CREATE DATABASE productdb;
 ```
 
+### Redis Setup (Manual) | Configuración de Redis (Manual)
+
+**Using Docker | Usando Docker:**
+
+```bash
+# Start Redis
+docker run -d \
+  --name redis-product \
+  -p 6379:6379 \
+  redis:7-alpine redis-server --appendonly yes
+
+# Test Redis connection | Probar conexión Redis
+docker exec redis-product redis-cli ping
+# Should return: PONG
+
+# View Redis data | Ver datos en Redis
+docker exec -it redis-product redis-cli
+> KEYS product:*
+> GET product:1
+```
+
 ---
 
 ## Running Locally | Ejecución Local
@@ -142,6 +182,7 @@ CREATE DATABASE productdb;
 - Java 17+
 - Maven 3.9+
 - PostgreSQL running on port 5432
+- Redis running on port 6379
 - Eureka Server running on port 8761
 - Config Server running on port 8888 (optional)
 
@@ -177,9 +218,44 @@ curl http://localhost:8081/actuator/health
     },
     "eureka": {
       "status": "UP"
+    },
+    "redis": {
+      "status": "UP"
     }
   }
 }
+```
+
+### Test API Endpoints | Probar Endpoints de la API
+
+#### Using Swagger UI | Usando Swagger UI
+**EN:** Open Swagger UI for interactive API testing:
+
+**ES:** Abre Swagger UI para pruebas interactivas de la API:
+
+```
+http://localhost:8081/swagger-ui.html
+```
+
+#### Using cURL | Usando cURL
+
+**Create a product | Crear un producto:**
+```bash
+curl -X POST http://localhost:8081/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Product",
+    "description": "Product for testing",
+    "price": 99.99,
+    "stock": 100,
+    "category": "Test",
+    "active": true
+  }'
+```
+
+**Get all products | Obtener todos los productos:**
+```bash
+curl http://localhost:8081/api/products
 ```
 
 ### Check Eureka Registration | Verificar Registro en Eureka
@@ -196,24 +272,28 @@ http://localhost:8761
 
 ## Current Implementation Status | Estado Actual de Implementación
 
-###  Implemented | Implementado
+### ✅ Implemented | Implementado
 
 - Product entity with JPA annotations
 - ProductRepository with custom queries
-- ProductDTO for data transfer
+- ProductDTO for data transfer with validation
 - PostgreSQL datasource configuration
+- **ProductService with business logic** (Commit 6)
+- **Redis caching with Cache-Aside pattern** (Commit 6)
+- **Stock management (increase/decrease)** (Commit 6)
+- **Custom exceptions** (ProductNotFoundException, InsufficientStockException, ProductAlreadyExistsException)
+- **ProductMapper for Entity-DTO conversion** (Commit 6)
+- **ProductController with 13 REST endpoints** (Commit 7)
+- **Global Exception Handler** (Commit 7)
+- **Swagger/OpenAPI documentation** (Commit 7)
+- **Request/Response DTOs** (Commit 7)
 - Eureka Client integration
 - Config Client integration
 - Health checks with Actuator
 - Hibernate schema auto-generation
 
-###  Coming in Next Commits | Próximos Commits
+### 🚧 Coming in Next Commits | Próximos Commits
 
-- **Commit 6**: Service layer with business logic
-- **Commit 6**: Redis caching integration
-- **Commit 7**: REST API Controller
-- **Commit 7**: Request validation
-- **Commit 7**: Error handling
 - **Commit 8**: Comprehensive test suite
 - **Commit 8**: Integration tests with TestContainers
 
@@ -289,6 +369,140 @@ export EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-prod:8761/eureka/
 
 ---
 
+## Redis Caching Strategy | Estrategia de Caché Redis
+
+### Cache-Aside Pattern | Patrón Cache-Aside
+
+**EN:**
+- **Read**: Check cache first, if miss → read from DB → cache result
+- **Write**: Update DB → invalidate cache
+- **TTL**: 1 hour (configurable)
+- **Keys**: `product:{id}`
+
+**ES:**
+- **Lectura**: Verifica caché primero, si falla → lee de BD → cachea resultado
+- **Escritura**: Actualiza BD → invalida caché
+- **TTL**: 1 hora (configurable)
+- **Claves**: `product:{id}`
+
+### Cache Operations | Operaciones de Caché
+
+**EN:**
+- `getProductById()` → Cache read
+- `createProduct()` → Cache write
+- `updateProduct()` → Cache invalidation + write
+- `deleteProduct()` → Cache invalidation
+- `decreaseStock()` / `increaseStock()` → Cache invalidation
+
+**ES:**
+- `getProductById()` → Lectura de caché
+- `createProduct()` → Escritura en caché
+- `updateProduct()` → Invalidación + escritura de caché
+- `deleteProduct()` → Invalidación de caché
+- `decreaseStock()` / `increaseStock()` → Invalidación de caché
+
+---
+
+## REST API Endpoints | Endpoints de la API REST
+
+### Base URL
+- **Local**: `http://localhost:8081/api/products`
+- **Via Gateway**: `http://localhost:8080/api/products`
+
+### Swagger UI | Interfaz Swagger
+- **URL**: `http://localhost:8081/swagger-ui.html`
+- **OpenAPI Docs**: `http://localhost:8081/api-docs`
+
+### Available Endpoints | Endpoints Disponibles
+
+#### CRUD Operations | Operaciones CRUD
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/products` | Crear producto \| Create product |
+| GET | `/api/products/{id}` | Obtener producto por ID \| Get product by ID |
+| GET | `/api/products` | Listar todos \| List all products |
+| GET | `/api/products/active` | Listar activos \| List active products |
+| PUT | `/api/products/{id}` | Actualizar \| Update product |
+| DELETE | `/api/products/{id}` | Eliminar \| Delete product |
+
+#### Search Operations | Operaciones de Búsqueda
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products/search?name={name}` | Buscar por nombre \| Search by name |
+| GET | `/api/products/category/{category}` | Buscar por categoría \| Search by category |
+| GET | `/api/products/price-range?minPrice={min}&maxPrice={max}` | Buscar por rango de precio \| Search by price range |
+| GET | `/api/products/low-stock?threshold={threshold}` | Productos con stock bajo \| Low stock products |
+
+#### Stock Management | Gestión de Stock
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products/{id}/check-stock?quantity={quantity}` | Verificar stock \| Check stock |
+| PATCH | `/api/products/{id}/decrease-stock?quantity={quantity}` | Disminuir stock \| Decrease stock |
+| PATCH | `/api/products/{id}/increase-stock?quantity={quantity}` | Aumentar stock \| Increase stock |
+
+### Example Requests | Ejemplos de Peticiones
+
+#### Create Product | Crear Producto
+```bash
+curl -X POST http://localhost:8081/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Laptop HP",
+    "description": "Laptop HP 15 pulgadas",
+    "price": 899.99,
+    "stock": 50,
+    "category": "Electronics",
+    "imageUrl": "https://example.com/laptop.jpg",
+    "active": true
+  }'
+```
+
+#### Get Product | Obtener Producto
+```bash
+curl http://localhost:8081/api/products/1
+```
+
+#### Search by Category | Buscar por Categoría
+```bash
+curl http://localhost:8081/api/products/category/Electronics
+```
+
+#### Update Stock | Actualizar Stock
+```bash
+curl -X PATCH "http://localhost:8081/api/products/1/decrease-stock?quantity=5"
+```
+
+---
+
+## Service Layer | Capa de Servicio
+
+### ProductService Methods | Métodos de ProductService
+
+**CRUD Operations | Operaciones CRUD:**
+- `createProduct(dto)` - Create new product
+- `getProductById(id)` - Get product (cached)
+- `getAllProducts()` - Get all products
+- `getActiveProducts()` - Get active products
+- `updateProduct(id, dto)` - Update product
+- `deleteProduct(id)` - Delete product
+
+**Search Operations | Operaciones de Búsqueda:**
+- `searchByName(name)` - Search by name
+- `searchByCategory(category)` - Search by category
+- `searchByPriceRange(min, max)` - Search by price range
+- `getAvailableProducts()` - Get available products
+
+**Stock Management | Gestión de Stock:**
+- `checkStock(productId, quantity)` - Check stock availability
+- `decreaseStock(productId, quantity)` - Decrease stock
+- `increaseStock(productId, quantity)` - Increase stock
+- `getLowStockProducts(threshold)` - Get low stock products
+
+**Statistics | Estadísticas:**
+- `countByCategory(category)` - Count products by category
+
+---
+
 ## Troubleshooting | Resolución de Problemas
 
 ### Cannot Connect to PostgreSQL | No Puede Conectar a PostgreSQL
@@ -305,6 +519,24 @@ docker ps | grep postgres-product
 docker logs postgres-product
 ```
 
+### Cannot Connect to Redis | No Puede Conectar a Redis
+
+**EN:** Ensure Redis is running:
+
+**ES:** Asegúrate que Redis está corriendo:
+
+```bash
+# Check if Redis is running
+docker ps | grep redis-product
+
+# View Redis logs
+docker logs redis-product
+
+# Test Redis connection
+docker exec redis-product redis-cli ping
+# Expected: PONG
+```
+
 ### Service Not Registering with Eureka | Servicio No Se Registra en Eureka
 
 **EN:** Verify Eureka Server is accessible:
@@ -313,6 +545,20 @@ docker logs postgres-product
 
 ```bash
 curl http://localhost:8761/eureka/apps
+```
+
+### Redis Connection Timeout | Tiempo de Espera Redis Agotado
+
+**EN:** Check Redis configuration in `application.yml`:
+
+**ES:** Verifica configuración Redis en `application.yml`:
+
+```yaml
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
 ```
 
 ---
