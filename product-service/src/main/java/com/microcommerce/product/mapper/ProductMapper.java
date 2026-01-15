@@ -1,12 +1,13 @@
 package com.microcommerce.product.mapper;
 
 import com.microcommerce.product.dto.ProductDTO;
+import com.microcommerce.product.dto.response.ProductResponse;
 import com.microcommerce.product.entity.Product;
 import org.springframework.stereotype.Component;
 
 /**
- * Mapper for converting between Product entity and ProductDTO
- * Mapper para convertir entre entidad Product y ProductDTO
+ * Mapper for converting between Product entity and DTOs
+ * Mapper para convertir entre entidad Product y DTOs
  */
 @Component
 public class ProductMapper {
@@ -83,5 +84,29 @@ public class ProductMapper {
         dto.setActive(product.getActive());
 
         return dto;
+    }
+
+    /**
+     * Convert Product entity to ProductResponse
+     * Convertir entidad Product a ProductResponse
+     */
+    public ProductResponse toResponse(Product product) {
+        if (product == null) {
+            return null;
+        }
+
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .category(product.getCategory())
+                .imageUrl(product.getImageUrl())
+                .active(product.getActive())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .available(product.getActive() && product.getStock() > 0)
+                .build();
     }
 }
