@@ -1,0 +1,63 @@
+# Docker Compose for local development
+# Docker Compose para desarrollo local
+#
+# Este archivo es para desarrollo local SOLAMENTE
+# This file is for local development ONLY
+#
+# Para iniciar todos los servicios de infraestructura:
+# To start all infrastructure services:
+#   docker-compose -f docker-compose-dev.yml up -d
+#
+# Para detener:
+# To stop:
+#   docker-compose -f docker-compose-dev.yml down
+
+version: '3.8'
+
+services:
+  # PostgreSQL for Product Service
+  postgres-product:
+    image: postgres:16-alpine
+    container_name: postgres-product
+    environment:
+      POSTGRES_DB: productdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - product-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microcommerce-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: redis-product
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - microcommerce-network
+
+volumes:
+  product-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  microcommerce-network:
+    driver: bridge
