@@ -1,2 +1,363 @@
-# MicroCommerce-
-Sistema E-commerce con Microservicios
+# MicroCommerce | Sistema E-commerce con Microservicios
+
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2023.0.0-blue.svg)](https://spring.io/projects/spring-cloud)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build](https://img.shields.io/badge/Build-Maven-red.svg)](https://maven.apache.org/)
+
+---
+
+## Descripción | Description
+
+**ES:** MicroCommerce es una plataforma de e-commerce construida con arquitectura de microservicios, diseñada para demostrar las mejores prácticas en desarrollo de sistemas distribuidos. Implementa patrones modernos como Service Discovery, API Gateway, Configuration Management, Circuit Breaker y Caching distribuido.
+
+**EN:** MicroCommerce is an e-commerce platform built with microservices architecture, designed to demonstrate best practices in distributed systems development. It implements modern patterns such as Service Discovery, API Gateway, Configuration Management, Circuit Breaker, and distributed Caching.
+
+---
+
+## Arquitectura | Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         API GATEWAY                              │
+│                      (Port 8080)                                 │
+│            Circuit Breaker | Load Balancer | Routing            │
+└────────────────┬────────────────────────────────────────────────┘
+                 │
+    ┌────────────┼────────────┬────────────┬──────────────┐
+    │            │            │            │              │
+    ▼            ▼            ▼            ▼              ▼
+┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────────┐
+│Product │  │ Order  │  │  User  │  │Payment │  │   Eureka   │
+│Service │  │Service │  │Service │  │Service │  │   Server   │
+│ :8081  │  │ :8082  │  │ :8083  │  │ :8084  │  │   :8761    │
+└───┬────┘  └───┬────┘  └───┬────┘  └───┬────┘  └────────────┘
+    │           │           │           │              │
+    │           │           │           │              │
+┌───▼───┐   ┌───▼───┐   ┌───▼───┐   ┌───▼────┐  ┌────▼──────┐
+│PostgreSQL MongoDB │   │PostgreSQL Redis   │  │   Config  │
+│ Product│   │ Orders│   │  Users│   │Cache  │  │  Server   │
+└────────┘   └────────┘   └────────┘   └────────┘  │  :8888    │
+                                                    └───────────┘
+```
+
+---
+
+## Stack Tecnológico | Tech Stack
+
+### Backend Framework
+- **Spring Boot 3.2.0** - Framework principal
+- **Spring Cloud 2023.0.0** - Microservices tools
+- **Java 17** - Lenguaje de programación
+
+### Microservices Infrastructure
+- **Eureka Server** - Service Discovery
+- **Spring Cloud Config** - Centralized Configuration
+- **Spring Cloud Gateway** - API Gateway
+- **Resilience4j** - Circuit Breaker
+
+### Databases
+- **PostgreSQL 16** - Product & User Services
+- **MongoDB** - Order Service (planned)
+- **Redis 7** - Distributed Cache
+
+### Build & Deploy
+- **Maven 3.9+** - Build tool
+- **Docker & Docker Compose** - Containerization
+- **Kubernetes** - Orchestration (planned)
+
+### Documentation & Testing
+- **Swagger/OpenAPI 3.0** - API Documentation
+- **JUnit 5 & Mockito** - Testing (planned)
+- **TestContainers** - Integration Testing (planned)
+
+---
+
+## Microservicios | Microservices
+
+| Microservicio | Puerto | Base de Datos | Estado | Descripción |
+|--------------|--------|---------------|--------|-------------|
+| **Eureka Server** | 8761 | - | [COMPLETO] | Service Discovery |
+| **Config Server** | 8888 | Git (local) | [COMPLETO] | Configuration Management |
+| **API Gateway** | 8080 | - | [COMPLETO] | Routing & Load Balancing |
+| **Product Service** | 8081 | PostgreSQL + Redis | [COMPLETO] | Product Catalog Management |
+| **Order Service** | 8082 | MongoDB | [PENDIENTE] | Order Processing |
+| **User Service** | 8083 | PostgreSQL | [PENDIENTE] | User & Authentication |
+| **Payment Service** | 8084 | External API | [PENDIENTE] | Payment Processing |
+
+---
+
+## Quick Start
+
+### Prerequisitos | Prerequisites
+
+- **Java 17+**
+- **Maven 3.9+**
+- **Docker & Docker Compose**
+- **PostgreSQL 16** (o usar Docker)
+- **Redis 7** (o usar Docker)
+
+### Paso 1: Iniciar Infraestructura (PostgreSQL + Redis)
+
+```bash
+# Desde la raíz del proyecto
+docker-compose -f docker-compose-dev.yml up -d
+```
+
+### Paso 2: Iniciar Eureka Server
+
+```bash
+cd eureka-server
+mvn spring-boot:run
+```
+
+**Verificar:** http://localhost:8761
+
+### Paso 3: Iniciar Config Server
+
+```bash
+cd config-server
+mvn spring-boot:run
+```
+
+**Verificar:** http://localhost:8888/actuator/health
+
+### Paso 4: Iniciar API Gateway
+
+```bash
+cd api-gateway
+mvn spring-boot:run
+```
+
+**Verificar:** http://localhost:8080/actuator/health
+
+### Paso 5: Iniciar Product Service
+
+```bash
+cd product-service
+mvn spring-boot:run
+```
+
+**Verificar:** http://localhost:8081/actuator/health
+
+**Swagger UI:** http://localhost:8081/swagger-ui.html
+
+---
+
+## Estructura del Proyecto | Project Structure
+
+```
+MicroCommerce/
+├── eureka-server/              # Service Discovery
+├── config-server/              # Configuration Management
+├── api-gateway/                # API Gateway
+├── product-service/            # Product Catalog Microservice
+│   ├── src/main/java/
+│   │   └── com/microcommerce/product/
+│   │       ├── controller/     # REST Controllers
+│   │       ├── service/        # Business Logic
+│   │       ├── repository/     # Data Access
+│   │       ├── entity/         # JPA Entities
+│   │       ├── dto/            # Data Transfer Objects
+│   │       ├── mapper/         # Entity-DTO Mappers
+│   │       ├── exception/      # Custom Exceptions
+│   │       └── config/         # Configuration Classes
+│   ├── pom.xml
+│   ├── Dockerfile
+│   └── README.md
+├── config/                     # Centralized Configurations
+│   ├── application.yml
+│   ├── product-service.yml
+│   ├── order-service.yml
+│   └── user-service.yml
+├── docker-compose-dev.yml      # Docker Compose for Development
+├── pom.xml                     # Parent POM
+└── README.md
+```
+
+---
+
+## Características Clave | Key Features
+
+### [IMPLEMENTADO] | Implemented
+
+- **Service Discovery** con Eureka
+- **Centralized Configuration** con Spring Cloud Config
+- **API Gateway** con Spring Cloud Gateway
+- **Circuit Breaker** con Resilience4j
+- **Load Balancing** client-side
+- **Health Checks** con Actuator
+- **Product Service** completo:
+  - CRUD de productos
+  - Búsqueda avanzada (nombre, categoría, precio)
+  - Gestión de stock (increase/decrease)
+  - Redis Caching (Cache-Aside pattern)
+  - Swagger/OpenAPI documentation
+  - Global Exception Handling
+  - Validación de datos
+
+### [EN DESARROLLO] | In Development
+
+- Order Service con MongoDB
+- User Service con autenticación JWT
+- Payment Service con integración externa
+- Tests unitarios e integración
+- Despliegue en Kubernetes
+- CI/CD Pipeline
+
+---
+
+## Endpoints Principales | Main Endpoints
+
+### Product Service (via Gateway)
+
+| Method | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/products` | Listar todos los productos |
+| GET | `/api/products/{id}` | Obtener producto por ID |
+| GET | `/api/products/active` | Listar productos activos |
+| GET | `/api/products/search?name={name}` | Buscar por nombre |
+| GET | `/api/products/category/{category}` | Buscar por categoría |
+| GET | `/api/products/price-range?minPrice={min}&maxPrice={max}` | Buscar por rango de precio |
+| POST | `/api/products` | Crear nuevo producto |
+| PUT | `/api/products/{id}` | Actualizar producto |
+| DELETE | `/api/products/{id}` | Eliminar producto |
+| PATCH | `/api/products/{id}/decrease-stock?quantity={qty}` | Disminuir stock |
+| PATCH | `/api/products/{id}/increase-stock?quantity={qty}` | Aumentar stock |
+
+**Base URL via Gateway:** `http://localhost:8080`  
+**Base URL directo:** `http://localhost:8081`
+
+---
+
+## Monitoreo | Monitoring
+
+### Eureka Dashboard
+```
+http://localhost:8761
+```
+Ver todos los servicios registrados
+
+### Spring Boot Actuator
+```
+http://localhost:{port}/actuator/health
+http://localhost:{port}/actuator/metrics
+http://localhost:{port}/actuator/info
+```
+
+### Gateway Routes
+```
+http://localhost:8080/actuator/gateway/routes
+```
+
+---
+
+## Testing | Pruebas
+
+### Crear un Producto
+
+```bash
+curl -X POST http://localhost:8080/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Laptop HP Pavilion",
+    "description": "Laptop HP 15 pulgadas, 8GB RAM, 256GB SSD",
+    "price": 899.99,
+    "stock": 25,
+    "category": "Electronics",
+    "imageUrl": "https://example.com/laptop.jpg",
+    "active": true
+  }'
+```
+
+### Obtener Todos los Productos
+
+```bash
+curl http://localhost:8080/api/products
+```
+
+### Buscar por Categoría
+
+```bash
+curl http://localhost:8080/api/products/category/Electronics
+```
+
+---
+
+## Patrones de Diseño Implementados | Design Patterns
+
+- **Service Registry Pattern** - Eureka Server
+- **API Gateway Pattern** - Spring Cloud Gateway
+- **Circuit Breaker Pattern** - Resilience4j
+- **Cache-Aside Pattern** - Redis caching
+- **Repository Pattern** - Spring Data JPA
+- **DTO Pattern** - Data Transfer Objects
+- **Factory Pattern** - Entity-DTO Mappers
+- **Dependency Injection** - Spring IoC
+
+---
+
+## Configuración | Configuration
+
+### Variables de Entorno
+
+```bash
+# PostgreSQL
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=productdb
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Eureka
+EUREKA_SERVER_URL=http://localhost:8761/eureka/
+
+# Config Server
+CONFIG_SERVER_URL=http://localhost:8888
+```
+
+---
+
+## Documentación Adicional | Additional Documentation
+
+- [Product Service README](./product-service/README.md)
+- [Eureka Server README](./eureka-server/README.md)
+- [Config Server README](./config-server/README.md)
+- [API Gateway README](./api-gateway/README.md)
+- [Architecture Documentation](./MICROSERVICES_ARCHITECTURE.md)
+
+---
+
+## Contribución | Contributing
+
+Este es un proyecto de portafolio personal. Sugerencias y feedback son bienvenidos.
+
+---
+
+## Licencia | License
+
+MIT License - ver [LICENSE](LICENSE) para más detalles.
+
+---
+
+## Autor | Author
+
+**Cristian A. Soncco Boza** - Tech Lead & Full Stack Developer
+
+---
+
+## Enlaces | Links
+
+- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- [Spring Cloud Documentation](https://spring.io/projects/spring-cloud)
+- [Docker Documentation](https://docs.docker.com/)
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+
+---
+
+**Si te gusta este proyecto, dale una estrella! | If you like this project, give it a star!**
