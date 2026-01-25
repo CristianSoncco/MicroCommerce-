@@ -1,0 +1,55 @@
+# Configuración para tests
+# Test configuration
+
+spring:
+  application:
+    name: product-service-test
+
+  # Desactivar Config Server en tests
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+  # H2 Database para tests rápidos (cuando no se usa TestContainers)
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+
+  # Redis embebido para tests
+  redis:
+    host: localhost
+    port: 6379
+
+# Eureka desactivado para tests
+eureka:
+  client:
+    enabled: false
+
+# Actuator solo health para tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# Logs en nivel WARN para tests (menos verbose)
+logging:
+  level:
+    root: WARN
+    com.microcommerce.product: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.testcontainers: INFO
