@@ -7,15 +7,23 @@ import com.microcommerce.product.entity.Product;
 import com.microcommerce.product.exception.InsufficientStockException;
 import com.microcommerce.product.exception.ProductAlreadyExistsException;
 import com.microcommerce.product.exception.ProductNotFoundException;
+import com.microcommerce.product.exception.handler.GlobalExceptionHandler;
 import com.microcommerce.product.mapper.ProductMapper;
 import com.microcommerce.product.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -35,6 +43,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Controller tests for ProductController with MockMvc
  */
 @WebMvcTest(ProductController.class)
+@Import(GlobalExceptionHandler.class)
+@ActiveProfiles("test")
+@TestPropertySource(properties = {
+        "spring.jpa.hibernate.ddl-auto=none",
+        "spring.autoconfigure.exclude=" +
+                "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
+                "org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration"
+})
 @DisplayName("ProductController Tests")
 class ProductControllerTest {
 

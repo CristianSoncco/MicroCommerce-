@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.ActiveProfiles;
+// import org.springframework.test.context.DynamicPropertyRegistry;
+// import org.springframework.test.context.DynamicPropertySource;
+// import org.testcontainers.containers.PostgreSQLContainer;
+// import org.testcontainers.junit.jupiter.Container;
+// import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,27 +21,36 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Integration tests para ProductRepository con TestContainers
- * Integration tests for ProductRepository with TestContainers
+ * Integration tests para ProductRepository
+ * Integration tests for ProductRepository
+ *
+ * NOTE: Usando H2 en modo PostgreSQL para desarrollo local.
+ * En CI/CD, descomentar las anotaciones @Testcontainers y usar TestContainers con PostgreSQL real.
+ *
+ * NOTE: Using H2 in PostgreSQL mode for local development.
+ * In CI/CD, uncomment @Testcontainers annotations and use TestContainers with real PostgreSQL.
  */
 @DataJpaTest
-@Testcontainers
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)  // Usar H2 embebido
+// @Testcontainers  // Descomentar para usar TestContainers en CI/CD
+// @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)  // Descomentar para TestContainers
 @DisplayName("ProductRepository Integration Tests")
 class ProductRepositoryIntegrationTest {
 
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
+    // Descomentar para usar TestContainers en CI/CD:
+    // @Container
+    // static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+    //         .withDatabaseName("testdb")
+    //         .withUsername("test")
+    //         .withPassword("test");
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
+    // @DynamicPropertySource
+    // static void configureProperties(DynamicPropertyRegistry registry) {
+    //     registry.add("spring.datasource.url", postgres::getJdbcUrl);
+    //     registry.add("spring.datasource.username", postgres::getUsername);
+    //     registry.add("spring.datasource.password", postgres::getPassword);
+    // }
 
     @Autowired
     private ProductRepository productRepository;
