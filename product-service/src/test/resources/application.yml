@@ -1,4 +1,4 @@
-# Configuración para tests
+# Configuracin para tests
 # Test configuration
 
 spring:
@@ -11,35 +11,6 @@ spring:
       enabled: false
     discovery:
       enabled: false
-
-  # Desactivar JPA auto-configuration para tests de controller
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-
-  # H2 Database en modo PostgreSQL para tests de integración locales
-  # H2 Database in PostgreSQL mode for local integration tests
-  datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-
-  # Redis embebido para tests
-  redis:
-    host: localhost
-    port: 6379
 
 # Eureka desactivado para tests
 eureka:

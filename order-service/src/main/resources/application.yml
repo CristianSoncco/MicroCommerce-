@@ -1,0 +1,121 @@
+# Order Service Configuration
+# Configuración del Servicio de Pedidos
+
+server:
+  port: 8082
+
+spring:
+  application:
+    name: order-service
+
+  # PostgreSQL Database Configuration
+  # Configuración de Base de Datos PostgreSQL
+  datasource:
+    url: jdbc:postgresql://localhost:5433/orderdb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA Configuration
+  # Configuración de JPA
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+  # Spring Cloud Config Client
+  # Cliente de Spring Cloud Config
+  cloud:
+    config:
+      enabled: false
+      uri: http://localhost:8888
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1
+
+# Eureka Client Configuration
+# Configuración de Cliente Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+
+# Resilience4j Configuration
+# Configuración de Resilience4j para Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      productService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        minimum-number-of-calls: 5
+  retry:
+    instances:
+      productService:
+        max-attempts: 3
+        wait-duration: 1000
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+  timelimiter:
+    instances:
+      productService:
+        timeout-duration: 5s
+
+# Actuator Configuration
+# Configuración de Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging Configuration
+# Configuración de Logs
+logging:
+  level:
+    com.microcommerce.order: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
