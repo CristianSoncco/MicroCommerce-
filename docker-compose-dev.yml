@@ -38,20 +38,16 @@ services:
     networks:
       - microcommerce-network
 
-  # PostgreSQL for Order Service
-  postgres-order:
-    image: postgres:16-alpine
-    container_name: postgres-order
-    environment:
-      POSTGRES_DB: orderdb
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  # MongoDB for Order Service
+  mongo-order:
+    image: mongo:7-jammy
+    container_name: mongo-order
     ports:
-      - "5433:5432"
+      - "27017:27017"
     volumes:
-      - order-data:/var/lib/postgresql/data
+      - order-mongo-data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -78,7 +74,7 @@ services:
 volumes:
   product-data:
     driver: local
-  order-data:
+  order-mongo-data:
     driver: local
   redis-data:
     driver: local

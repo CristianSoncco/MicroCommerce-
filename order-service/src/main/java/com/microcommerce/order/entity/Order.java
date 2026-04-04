@@ -1,9 +1,11 @@
 package com.microcommerce.order.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,26 +13,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Order Entity
- * Entidad de Pedido
- * 
- * Representa un pedido realizado por un usuario en el sistema.
- * Contiene los items del pedido, estado y totales.
- * 
- * Estados posibles:
- * - PENDING: Pedido creado, esperando pago
- * - PAID: Pago confirmado
- * - PROCESSING: En proceso de preparación
- * - SHIPPED: Enviado
- * - DELIVERED: Entregado
- * - CANCELLED: Cancelado
+ * Order Document (MongoDB)
+ * Documento de Pedido (MongoDB)
+ *
+ * Represents an order placed by a user.
+ * OrderItems are embedded as a list inside the order document.
+ *
+ * Representa un pedido realizado por un usuario.
+ * Los items del pedido se almacenan embebidos dentro del documento.
+ *
+ * Possible statuses / Estados posibles:
+ * - PENDING: Order created, awaiting payment / Pedido creado, esperando pago
+ * - PAID: Payment confirmed / Pago confirmado
+ * - PROCESSING: Being prepared / En preparacion
+ * - SHIPPED: Shipped / Enviado
+ * - DELIVERED: Delivered / Entregado
+ * - CANCELLED: Cancelled / Cancelado
  */
-@Entity
-@Table(name = "orders", indexes = {
-    @Index(name = "idx_user_id", columnList = "user_id"),
-    @Index(name = "idx_status", columnList = "status"),
-    @Index(name = "idx_created_at", columnList = "created_at")
-})
+@Document(collection = "orders")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -39,65 +39,52 @@ import java.util.List;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(name = "user_id", nullable = false)
+    @Indexed
     private Long userId;
 
-    @Column(name = "status", nullable = false, length = 20)
-    @Enumerated(EnumType.STRING)
+    @Indexed
     private OrderStatus status;
 
-    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "shipping_address", nullable = false, length = 500)
     private String shippingAddress;
 
-    @Column(name = "payment_method", length = 50)
     private String paymentMethod;
 
-    @Column(name = "transaction_id", length = 100)
     private String transactionId;
 
-    @Column(name = "notes", length = 1000)
     private String notes;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreatedDate
+    @Indexed
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @Column(name = "shipped_at")
     private LocalDateTime shippedAt;
 
-    @Column(name = "delivered_at")
     private LocalDateTime deliveredAt;
 
     /**
      * Add order item helper method
-     * Método auxiliar para agregar items al pedido
+     * Metodo auxiliar para agregar items al pedido
      */
     public void addItem(OrderItem item) {
         items.add(item);
-        item.setOrder(this);
     }
 
     /**
      * Remove order item helper method
-     * Método auxiliar para remover items del pedido
+     * Metodo auxiliar para remover items del pedido
      */
     public void removeItem(OrderItem item) {
         items.remove(item);
-        item.setOrder(null);
     }
 
     /**
@@ -106,8 +93,8 @@ public class Order {
      */
     public void calculateTotalAmount() {
         this.totalAmount = items.stream()
-            .map(OrderItem::getSubtotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(OrderItem::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**

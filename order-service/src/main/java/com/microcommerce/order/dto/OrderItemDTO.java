@@ -8,16 +8,15 @@ import java.math.BigDecimal;
 /**
  * OrderItem Data Transfer Object
  * Objeto de Transferencia de Datos para Items de Pedido
- * 
- * DTO usado para transferir información de items de pedidos.
+ *
+ * DTO used for transferring order item information.
+ * DTO usado para transferir informacion de items de pedidos.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class OrderItemDTO {
-
-    private Long id;
 
     @NotNull(message = "El ID de producto es requerido")
     @Positive(message = "El ID de producto debe ser positivo")

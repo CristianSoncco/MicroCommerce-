@@ -12,9 +12,9 @@ import java.util.List;
 /**
  * Order Data Transfer Object
  * Objeto de Transferencia de Datos para Pedidos
- * 
- * DTO usado para transferir información de pedidos entre capas
- * y en las APIs REST.
+ *
+ * DTO used for transferring order information between layers and REST APIs.
+ * DTO usado para transferir informacion de pedidos entre capas y APIs REST.
  */
 @Data
 @NoArgsConstructor
@@ -22,7 +22,7 @@ import java.util.List;
 @Builder
 public class OrderDTO {
 
-    private Long id;
+    private String id;
 
     @NotNull(message = "El ID de usuario es requerido")
     @Positive(message = "El ID de usuario debe ser positivo")
@@ -30,15 +30,13 @@ public class OrderDTO {
 
     private OrderStatus status;
 
-    @NotNull(message = "El monto total es requerido")
-    @DecimalMin(value = "0.01", message = "El monto total debe ser mayor a 0")
     private BigDecimal totalAmount;
 
-    @NotBlank(message = "La dirección de envío es requerida")
-    @Size(max = 500, message = "La dirección de envío no puede exceder 500 caracteres")
+    @NotBlank(message = "La direccion de envio es requerida")
+    @Size(max = 500, message = "La direccion de envio no puede exceder 500 caracteres")
     private String shippingAddress;
 
-    @Size(max = 50, message = "El método de pago no puede exceder 50 caracteres")
+    @Size(max = 50, message = "El metodo de pago no puede exceder 50 caracteres")
     private String paymentMethod;
 
     private String transactionId;
