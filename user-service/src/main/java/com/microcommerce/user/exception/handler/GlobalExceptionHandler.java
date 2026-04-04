@@ -1,7 +1,9 @@
 package com.microcommerce.user.exception.handler;
 
 import com.microcommerce.user.dto.response.ErrorResponse;
+import com.microcommerce.user.exception.InvalidCredentialsException;
 import com.microcommerce.user.exception.UserAlreadyExistsException;
+import com.microcommerce.user.exception.UserDisabledException;
 import com.microcommerce.user.exception.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -50,6 +52,34 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(
+            InvalidCredentialsException ex, HttpServletRequest request) {
+        log.error("Credenciales invalidas: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "No autorizado",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UserDisabledException.class)
+    public ResponseEntity<ErrorResponse> handleUserDisabledException(
+            UserDisabledException ex, HttpServletRequest request) {
+        log.error("Usuario deshabilitado: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Prohibido",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

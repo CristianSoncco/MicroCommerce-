@@ -44,9 +44,8 @@ public class UserMapper {
         if (dto.getEmail() != null) {
             user.setEmail(dto.getEmail());
         }
-        if (dto.getPassword() != null) {
-            user.setPassword(dto.getPassword());
-        }
+        // Password is handled by the service layer (encoded with BCrypt)
+        // La contrasena se maneja en la capa de servicio (codificada con BCrypt)
         if (dto.getFirstName() != null) {
             user.setFirstName(dto.getFirstName());
         }
