@@ -1,0 +1,14 @@
+{
+  "userId": 1,
+  "shippingAddress": "Av. Secundaria 456, Lima, Peru",
+  "paymentMethod": "DEBIT_CARD",
+  "notes": "Entregar por la tarde",
+  "items": [
+    {
+      "productId": 1,
+      "productName": "Laptop HP",
+      "quantity": 1,
+      "unitPrice": 999.99
+    }
+  ]
+}

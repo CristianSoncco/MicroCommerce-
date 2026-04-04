@@ -1,0 +1,20 @@
+{
+  "userId": 1,
+  "shippingAddress": "Av. Principal 123, Lima, Peru",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "Entregar en horario de oficina",
+  "items": [
+    {
+      "productId": 1,
+      "productName": "Laptop HP",
+      "quantity": 2,
+      "unitPrice": 999.99
+    },
+    {
+      "productId": 2,
+      "productName": "Mouse Logitech",
+      "quantity": 1,
+      "unitPrice": 29.99
+    }
+  ]
+}
