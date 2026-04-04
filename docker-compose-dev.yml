@@ -38,6 +38,26 @@ services:
     networks:
       - microcommerce-network
 
+  # PostgreSQL for User Service
+  postgres-user:
+    image: postgres:16-alpine
+    container_name: postgres-user
+    environment:
+      POSTGRES_DB: ${USER_POSTGRES_DB:-userdb}
+      POSTGRES_USER: ${USER_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${USER_POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microcommerce-network
+
   # MongoDB for Order Service
   mongo-order:
     image: mongo:7-jammy
@@ -73,6 +93,8 @@ services:
 
 volumes:
   product-data:
+    driver: local
+  user-data:
     driver: local
   order-mongo-data:
     driver: local
