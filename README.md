@@ -326,26 +326,14 @@ curl http://localhost:8080/api/products/category/Electronics
 
 ## Configuración | Configuration
 
-### Variables de Entorno
+## Variables de Entorno
 
+Copia `.env.example` a `.env` y configura los valores segun tu entorno:
 ```bash
-# PostgreSQL
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=productdb
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Eureka
-EUREKA_SERVER_URL=http://localhost:8761/eureka/
-
-# Config Server
-CONFIG_SERVER_URL=http://localhost:8888
+cp .env.example .env
 ```
+
+Consulta `.env.example` para ver todas las variables requeridas y su descripcion.
 
 ---
 
