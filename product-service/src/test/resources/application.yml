@@ -1,0 +1,33 @@
+# Test configuration / Configuracion para tests
+
+spring:
+  application:
+    name: product-service-test
+
+  # Desactivar Config Server en tests
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+# Eureka desactivado para tests
+eureka:
+  client:
+    enabled: false
+
+# Actuator solo health para tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# Logs en nivel WARN para tests (menos verbose)
+logging:
+  level:
+    root: WARN
+    com.microcommerce.product: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.testcontainers: INFO

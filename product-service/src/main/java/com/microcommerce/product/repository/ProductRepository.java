@@ -29,6 +29,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryAndActiveTrue(String category);
 
     /**
+     * Find products by category and active status, ordered by creation date descending
+     * Buscar productos por categoría y estado activo, ordenados por fecha de creación descendente
+     */
+    List<Product> findByCategoryAndActiveTrueOrderByCreatedAtDesc(String category);
+
+    /**
+     * Find a product by exact name
+     * Buscar un producto por nombre exacto
+     */
+    java.util.Optional<Product> findByName(String name);
+
+    /**
      * Find products within a price range
      * Buscar productos dentro de un rango de precio
      */

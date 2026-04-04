@@ -1,8 +1,11 @@
 # Docker Compose for local development
 # Docker Compose para desarrollo local
-#
+#  
 # Este archivo es para desarrollo local SOLAMENTE
 # This file is for local development ONLY
+#
+# IMPORTANTE: Copia .env.example a .env antes de ejecutar
+# IMPORTANT: Copy .env.example to .env before running
 #
 # Para iniciar todos los servicios de infraestructura:
 # To start all infrastructure services:
@@ -20,13 +23,33 @@ services:
     image: postgres:16-alpine
     container_name: postgres-product
     environment:
-      POSTGRES_DB: productdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - product-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microcommerce-network
+
+  # PostgreSQL for Order Service
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: postgres-order
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - order-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -54,6 +77,8 @@ services:
 
 volumes:
   product-data:
+    driver: local
+  order-data:
     driver: local
   redis-data:
     driver: local

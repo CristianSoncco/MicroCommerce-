@@ -1,0 +1,14 @@
+# Test profile with TestContainers (PostgreSQL via TC, no Redis)
+# Perfil de test con TestContainers (PostgreSQL via TC, sin Redis)
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
