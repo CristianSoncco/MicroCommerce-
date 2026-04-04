@@ -24,15 +24,15 @@ import static org.assertj.core.api.Assertions.*;
  * Integration tests para ProductRepository
  * Integration tests for ProductRepository
  *
- * NOTE: Usando H2 en modo PostgreSQL para desarrollo local.
- * En CI/CD, descomentar las anotaciones @Testcontainers y usar TestContainers con PostgreSQL real.
+ * NOTE: Usando PostgreSQL real via perfil "test" (DB_URL/DB_USER/DB_PASSWORD).
+ * En CI/CD, puedes usar variables de entorno o Testcontainers.
  *
- * NOTE: Using H2 in PostgreSQL mode for local development.
- * In CI/CD, uncomment @Testcontainers annotations and use TestContainers with real PostgreSQL.
+ * NOTE: Uses real PostgreSQL via "test" profile (DB_URL/DB_USER/DB_PASSWORD).
+ * In CI/CD, use env vars or Testcontainers.
  */
 @DataJpaTest
 @ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)  // Usar H2 embebido
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)  // Usar PostgreSQL configurado en tests
 // @Testcontainers  // Descomentar para usar TestContainers en CI/CD
 // @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)  // Descomentar para TestContainers
 @DisplayName("ProductRepository Integration Tests")
