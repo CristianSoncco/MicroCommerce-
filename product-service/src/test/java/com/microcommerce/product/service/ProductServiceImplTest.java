@@ -351,4 +351,157 @@ class ProductServiceImplTest {
         assertThat(result).isEqualTo(5L);
         verify(productRepository).countByCategory("Electronics");
     }
+
+    @Test
+    @DisplayName("getActiveProducts - debe retornar productos disponibles")
+    void getActiveProducts_ReturnsAvailableProducts() {
+        // Given
+        List<Product> activeProducts = Arrays.asList(product);
+        when(productRepository.findAvailableProducts()).thenReturn(activeProducts);
+
+        // When
+        List<Product> result = productService.getActiveProducts();
+
+        // Then
+        assertThat(result).hasSize(1);
+        verify(productRepository).findAvailableProducts();
+    }
+
+    @Test
+    @DisplayName("getAvailableProducts - debe retornar productos disponibles")
+    void getAvailableProducts_ReturnsAvailableProducts() {
+        // Given
+        List<Product> availableProducts = Arrays.asList(product);
+        when(productRepository.findAvailableProducts()).thenReturn(availableProducts);
+
+        // When
+        List<Product> result = productService.getAvailableProducts();
+
+        // Then
+        assertThat(result).hasSize(1);
+        verify(productRepository).findAvailableProducts();
+    }
+
+    @Test
+    @DisplayName("searchByPriceRange - rango válido - debe retornar productos en rango")
+    void searchByPriceRange_ValidRange_ReturnsProductsInRange() {
+        // Given
+        BigDecimal min = new BigDecimal("50.00");
+        BigDecimal max = new BigDecimal("150.00");
+        List<Product> products = Arrays.asList(product);
+        when(productRepository.findByPriceBetween(min, max)).thenReturn(products);
+
+        // When
+        List<Product> result = productService.searchByPriceRange(min, max);
+
+        // Then
+        assertThat(result).hasSize(1);
+        verify(productRepository).findByPriceBetween(min, max);
+    }
+
+    @Test
+    @DisplayName("increaseStock - producto no existente - debe lanzar excepcion")
+    void increaseStock_NonExistingProduct_ThrowsException() {
+        // Given
+        when(valueOperations.get(anyString())).thenReturn(null);
+        when(productRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> productService.increaseStock(999L, 5))
+                .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("decreaseStock - producto no existente - debe lanzar excepcion")
+    void decreaseStock_NonExistingProduct_ThrowsException() {
+        // Given
+        when(valueOperations.get(anyString())).thenReturn(null);
+        when(productRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> productService.decreaseStock(999L, 5))
+                .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("updateProduct - producto no existente - debe lanzar excepcion")
+    void updateProduct_NonExistingId_ThrowsException() {
+        // Given
+        when(valueOperations.get(anyString())).thenReturn(null);
+        when(productRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> productService.updateProduct(999L, productDTO))
+                .isInstanceOf(ProductNotFoundException.class);
+        verify(productRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("checkStock - producto no existente - debe lanzar excepcion")
+    void checkStock_NonExistingProduct_ThrowsException() {
+        // Given
+        when(valueOperations.get(anyString())).thenReturn(null);
+        when(productRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> productService.checkStock(999L, 5))
+                .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("getAllProducts - lista vacia - debe retornar lista vacia")
+    void getAllProducts_EmptyList_ReturnsEmptyList() {
+        // Given
+        when(productRepository.findAll()).thenReturn(List.of());
+
+        // When
+        List<Product> result = productService.getAllProducts();
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("searchByName - sin resultados - debe retornar lista vacia")
+    void searchByName_NoResults_ReturnsEmptyList() {
+        // Given
+        when(productRepository.findByNameContainingIgnoreCase("NonExistent")).thenReturn(List.of());
+
+        // When
+        List<Product> result = productService.searchByName("NonExistent");
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    @DisplayName("decreaseStock - cantidad exacta al stock - debe dejar stock en cero")
+    void decreaseStock_ExactQuantity_LeavesZeroStock() {
+        // Given
+        when(valueOperations.get(anyString())).thenReturn(null);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        // When
+        productService.decreaseStock(1L, 10); // stock is 10
+
+        // Then
+        assertThat(product.getStock()).isEqualTo(0);
+        verify(productRepository).save(product);
+    }
+
+    @Test
+    @DisplayName("createProduct - debe cachear producto despues de guardar")
+    void createProduct_ShouldCacheAfterSave() {
+        // Given
+        when(productRepository.existsByName(anyString())).thenReturn(false);
+        when(productMapper.toEntity(any(ProductDTO.class))).thenReturn(product);
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        // When
+        productService.createProduct(productDTO);
+
+        // Then
+        verify(valueOperations).set(eq("product:" + product.getId()), eq(product), anyLong(), any());
+    }
 }

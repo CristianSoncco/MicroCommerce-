@@ -8,11 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
-// import org.springframework.test.context.DynamicPropertyRegistry;
-// import org.springframework.test.context.DynamicPropertySource;
-// import org.testcontainers.containers.PostgreSQLContainer;
-// import org.testcontainers.junit.jupiter.Container;
-// import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,36 +21,29 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Integration tests para ProductRepository
- * Integration tests for ProductRepository
- *
- * NOTE: Usando PostgreSQL real via perfil "test" (DB_URL/DB_USER/DB_PASSWORD).
- * En CI/CD, puedes usar variables de entorno o Testcontainers.
- *
- * NOTE: Uses real PostgreSQL via "test" profile (DB_URL/DB_USER/DB_PASSWORD).
- * In CI/CD, use env vars or Testcontainers.
+ * Integration tests for ProductRepository using TestContainers
+ * Tests de integracion para ProductRepository usando TestContainers
  */
 @DataJpaTest
-@ActiveProfiles("test")
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)  // Usar PostgreSQL configurado en tests
-// @Testcontainers  // Descomentar para usar TestContainers en CI/CD
-// @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)  // Descomentar para TestContainers
+@Testcontainers
+@ActiveProfiles("test-tc")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DisplayName("ProductRepository Integration Tests")
 class ProductRepositoryIntegrationTest {
 
-    // Descomentar para usar TestContainers en CI/CD:
-    // @Container
-    // static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-    //         .withDatabaseName("testdb")
-    //         .withUsername("test")
-    //         .withPassword("test");
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
 
-    // @DynamicPropertySource
-    // static void configureProperties(DynamicPropertyRegistry registry) {
-    //     registry.add("spring.datasource.url", postgres::getJdbcUrl);
-    //     registry.add("spring.datasource.username", postgres::getUsername);
-    //     registry.add("spring.datasource.password", postgres::getPassword);
-    // }
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+    }
 
     @Autowired
     private ProductRepository productRepository;
@@ -83,7 +76,7 @@ class ProductRepositoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("findByCategory - debe retornar productos de la categoría")
+    @DisplayName("findByCategory - debe retornar productos de la categoria")
     void findByCategory_ShouldReturnProductsInCategory() {
         // Given
         createProduct("Product 1", "Electronics", true, 10);
@@ -134,7 +127,7 @@ class ProductRepositoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("findByNameContainingIgnoreCase - debe buscar ignorando mayúsculas")
+    @DisplayName("findByNameContainingIgnoreCase - debe buscar ignorando mayusculas")
     void findByNameContainingIgnoreCase_ShouldSearchCaseInsensitive() {
         // Given
         createProduct("Laptop HP", "Electronics", true, 10);
@@ -172,7 +165,7 @@ class ProductRepositoryIntegrationTest {
     void findByCategoryAndActiveTrueOrderByCreatedAtDesc_ShouldOrderByDate() throws InterruptedException {
         // Given
         createProduct("Oldest Product", "Electronics", true, 10);
-        Thread.sleep(10); // Asegurar diferencia de tiempo
+        Thread.sleep(10);
         createProduct("Newest Product", "Electronics", true, 5);
 
         // When
@@ -199,7 +192,7 @@ class ProductRepositoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("countByCategory - debe contar productos por categoría")
+    @DisplayName("countByCategory - debe contar productos por categoria")
     void countByCategory_ShouldCountProductsByCategory() {
         // Given
         createProduct("Product 1", "Electronics", true, 10);
@@ -227,7 +220,7 @@ class ProductRepositoryIntegrationTest {
         List<Product> lowStock = productRepository.findLowStockProducts(10);
 
         // Then
-        assertThat(lowStock).hasSize(2); // Products with stock < 10 and active
+        assertThat(lowStock).hasSize(2);
         assertThat(lowStock).allMatch(p -> p.getStock() < 10);
         assertThat(lowStock).allMatch(Product::getActive);
     }
@@ -280,6 +273,47 @@ class ProductRepositoryIntegrationTest {
         // Then
         Optional<Product> deleted = productRepository.findById(productId);
         assertThat(deleted).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findActiveByCategoryOrderByNewest - debe retornar productos activos ordenados")
+    void findActiveByCategoryOrderByNewest_ShouldReturnActiveProductsOrdered() throws InterruptedException {
+        // Given
+        createProduct("First Product", "Electronics", true, 10);
+        Thread.sleep(10);
+        createProduct("Second Product", "Electronics", true, 5);
+        createProduct("Inactive Product", "Electronics", false, 15);
+
+        // When
+        List<Product> products = productRepository.findActiveByCategoryOrderByNewest("Electronics");
+
+        // Then
+        assertThat(products).hasSize(2);
+        assertThat(products.get(0).getName()).isEqualTo("Second Product");
+        assertThat(products).allMatch(Product::getActive);
+    }
+
+    @Test
+    @DisplayName("findByCategory - categoria sin productos - debe retornar lista vacia")
+    void findByCategory_EmptyCategory_ShouldReturnEmptyList() {
+        // When
+        List<Product> products = productRepository.findByCategory("NonExistent");
+
+        // Then
+        assertThat(products).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findLowStockProducts - sin productos con stock bajo - debe retornar lista vacia")
+    void findLowStockProducts_NoLowStock_ShouldReturnEmptyList() {
+        // Given
+        createProduct("High Stock", "Electronics", true, 100);
+
+        // When
+        List<Product> lowStock = productRepository.findLowStockProducts(5);
+
+        // Then
+        assertThat(lowStock).isEmpty();
     }
 
     // Helper methods

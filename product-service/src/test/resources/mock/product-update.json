@@ -1,0 +1,9 @@
+{
+  "name": "Producto Actualizado",
+  "description": "Descripcion actualizada para pruebas",
+  "price": 199.99,
+  "stock": 50,
+  "category": "Electronics",
+  "imageUrl": "https://example.com/images/producto-actualizado.jpg",
+  "active": true
+}
