@@ -2,22 +2,22 @@ package com.microcommerce.order.repository;
 
 import com.microcommerce.order.entity.Order;
 import com.microcommerce.order.entity.Order.OrderStatus;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Order Repository
- * Repositorio de Pedidos
- * 
- * Interface para acceso a datos de pedidos usando Spring Data JPA.
+ * Order Repository (MongoDB)
+ * Repositorio de Pedidos (MongoDB)
+ *
+ * Interface for order data access using Spring Data MongoDB.
+ * Interface para acceso a datos de pedidos usando Spring Data MongoDB.
  */
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends MongoRepository<Order, String> {
 
     /**
      * Find all orders by user ID
@@ -45,17 +45,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     /**
      * Find pending orders older than specified date
-     * Buscar pedidos pendientes más antiguos que la fecha especificada
+     * Buscar pedidos pendientes mas antiguos que la fecha especificada
      */
-    @Query("SELECT o FROM Order o WHERE o.status = 'PENDING' AND o.createdAt < :cutoffDate")
-    List<Order> findPendingOrdersOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
+    @Query("{ 'status': 'PENDING', 'createdAt': { $lt: ?0 } }")
+    List<Order> findPendingOrdersOlderThan(LocalDateTime cutoffDate);
 
     /**
-     * Find user's most recent orders
-     * Buscar los pedidos más recientes de un usuario
+     * Find user's most recent orders sorted by creation date descending
+     * Buscar los pedidos mas recientes de un usuario ordenados por fecha descendente
      */
-    @Query("SELECT o FROM Order o WHERE o.userId = :userId ORDER BY o.createdAt DESC")
-    List<Order> findRecentOrdersByUserId(@Param("userId") Long userId);
+    List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     /**
      * Count orders by user ID

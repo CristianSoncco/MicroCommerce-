@@ -1,5 +1,5 @@
 # Order Service Configuration
-# Configuración del Servicio de Pedidos
+# Configuracion del Servicio de Pedidos
 
 server:
   port: 8082
@@ -8,35 +8,12 @@ spring:
   application:
     name: order-service
 
-  # PostgreSQL Database Configuration
-  # Configuración de Base de Datos PostgreSQL
-  datasource:
-    url: jdbc:postgresql://localhost:5433/orderdb
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-
-  # JPA Configuration
-  # Configuración de JPA
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        jdbc:
-          batch_size: 20
-        order_inserts: true
-        order_updates: true
-    open-in-view: false
+  # MongoDB Configuration
+  # Configuracion de MongoDB
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/orderdb
+      auto-index-creation: true
 
   # Spring Cloud Config Client
   # Cliente de Spring Cloud Config
@@ -52,7 +29,7 @@ spring:
         multiplier: 1.1
 
 # Eureka Client Configuration
-# Configuración de Cliente Eureka
+# Configuracion de Cliente Eureka
 eureka:
   client:
     service-url:
@@ -67,7 +44,7 @@ eureka:
     lease-expiration-duration-in-seconds: 90
 
 # Resilience4j Configuration
-# Configuración de Resilience4j para Circuit Breaker
+# Configuracion de Resilience4j para Circuit Breaker
 resilience4j:
   circuitbreaker:
     instances:
@@ -91,7 +68,7 @@ resilience4j:
         timeout-duration: 5s
 
 # Actuator Configuration
-# Configuración de Actuator
+# Configuracion de Actuator
 management:
   endpoints:
     web:
@@ -109,13 +86,12 @@ management:
         enabled: true
 
 # Logging Configuration
-# Configuración de Logs
+# Configuracion de Logs
 logging:
   level:
     com.microcommerce.order: DEBUG
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.mongodb: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
