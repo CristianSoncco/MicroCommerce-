@@ -1,5 +1,4 @@
-# Configuracin para tests
-# Test configuration
+# Test configuration / Configuracion para tests
 
 spring:
   application:

@@ -135,6 +135,22 @@
                 </configuration>
             </plugin>
 
+            <!-- Maven Surefire Plugin - Docker environment for TestContainers -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <environmentVariables>
+                        <DOCKER_HOST>unix:///var/run/docker.sock</DOCKER_HOST>
+                        <TESTCONTAINERS_RYUK_DISABLED>true</TESTCONTAINERS_RYUK_DISABLED>
+                    </environmentVariables>
+                    <systemPropertyVariables>
+                        <api.version>1.41</api.version>
+                        <docker.host>unix:///var/run/docker.sock</docker.host>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
             <!-- JaCoCo Maven Plugin for Code Coverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
