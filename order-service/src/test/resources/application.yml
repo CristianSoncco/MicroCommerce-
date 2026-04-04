@@ -1,0 +1,18 @@
+# Default test configuration
+# Configuracion de test por defecto
+
+spring:
+  application:
+    name: order-service-test
+
+  cloud:
+    config:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+logging:
+  level:
+    com.microcommerce.order: DEBUG

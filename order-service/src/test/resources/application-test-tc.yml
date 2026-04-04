@@ -1,0 +1,6 @@
+# Test profile with TestContainers (MongoDB via TC)
+# Perfil de test con TestContainers (MongoDB via TC)
+spring:
+  data:
+    mongodb:
+      auto-index-creation: true
