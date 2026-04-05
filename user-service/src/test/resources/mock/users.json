@@ -1,0 +1,42 @@
+[
+  {
+    "email": "john.doe@example.com",
+    "password": "password123",
+    "firstName": "John",
+    "lastName": "Doe",
+    "phone": "+1234567890",
+    "address": "123 Main St, Springfield",
+    "role": "CUSTOMER",
+    "active": true
+  },
+  {
+    "email": "jane.smith@example.com",
+    "password": "password456",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "phone": "+0987654321",
+    "address": "456 Oak Ave, Shelbyville",
+    "role": "CUSTOMER",
+    "active": true
+  },
+  {
+    "email": "admin@microcommerce.com",
+    "password": "adminpass123",
+    "firstName": "Admin",
+    "lastName": "User",
+    "phone": "+1122334455",
+    "address": "789 Admin Blvd",
+    "role": "ADMIN",
+    "active": true
+  },
+  {
+    "email": "disabled@example.com",
+    "password": "disabled123",
+    "firstName": "Disabled",
+    "lastName": "Account",
+    "phone": null,
+    "address": null,
+    "role": "CUSTOMER",
+    "active": false
+  }
+]
