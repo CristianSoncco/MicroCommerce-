@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: payment-service
+  config:
+    import: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+eureka:
+  client:
+    enabled: false
+
+stripe:
+  api:
+    key: sk_test_placeholder
+    base-url: https://api.stripe.com/v1
+  webhook:
+    secret: whsec_placeholder
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      stripePayment:
+        register-health-indicator: false
+        sliding-window-size: 5
+        minimum-number-of-calls: 3
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 2
+
+logging:
+  level:
+    com.microcommerce.payment: DEBUG
