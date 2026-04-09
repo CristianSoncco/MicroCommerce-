@@ -82,7 +82,7 @@
 | **Config Server** | 8888 | Git (local) | [COMPLETO] | Configuration Management |
 | **API Gateway** | 8080 | - | [COMPLETO] | Routing & Load Balancing |
 | **Product Service** | 8081 | PostgreSQL + Redis | [COMPLETO] | Product Catalog Management |
-| **Order Service** | 8082 | MongoDB | [PENDIENTE] | Order Processing |
+| **Order Service** | 8082 | PostgreSQL (5433) | [EN DESARROLLO] | Order Processing & Orchestration |
 | **User Service** | 8083 | PostgreSQL | [PENDIENTE] | User & Authentication |
 | **Payment Service** | 8084 | External API | [PENDIENTE] | Payment Processing |
 
@@ -100,8 +100,17 @@
 
 ### Paso 1: Iniciar Infraestructura (PostgreSQL + Redis)
 
+**IMPORTANTE:** Antes de ejecutar Docker Compose, configura las variables de entorno:
+
 ```bash
 # Desde la raíz del proyecto
+# 1. Copia el archivo de ejemplo
+cp .env.example .env
+
+# 2. Edita .env y cambia las credenciales (especialmente para producción)
+# El archivo .env NO se sube a Git (está en .gitignore)
+
+# 3. Inicia los servicios
 docker-compose -f docker-compose-dev.yml up -d
 ```
 
@@ -196,11 +205,28 @@ MicroCommerce/
   - Swagger/OpenAPI documentation
   - Global Exception Handling
   - Validación de datos
+  - **Suite de Tests Completa**:
+    - 18 tests unitarios (Service Layer)
+    - 12 tests de Mapper (MapStruct)
+    - 19 tests de Controller (MockMvc)
+    - Tests de integración con TestContainers
+    - Cobertura >80%
 
 ### [EN DESARROLLO] | In Development
 
-- Order Service con MongoDB
+- **Order Service** (Commit 9/12 completado)
+  -  Entidades Order y OrderItem
+  -  Repositorios JPA con queries personalizadas
+  -  DTOs con validación
+  -  Service Layer con Resilience4j (próximo)
+  -  REST Controller
+  -  Tests unitarios e integración
+
+###  [PRÓXIMOS] | Next
+
 - User Service con autenticación JWT
+- Payment Service con API externa
+- Event-driven architecture con RabbitMQ
 - Payment Service con integración externa
 - Tests unitarios e integración
 - Despliegue en Kubernetes
@@ -300,26 +326,14 @@ curl http://localhost:8080/api/products/category/Electronics
 
 ## Configuración | Configuration
 
-### Variables de Entorno
+## Variables de Entorno
 
+Copia `.env.example` a `.env` y configura los valores segun tu entorno:
 ```bash
-# PostgreSQL
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=productdb
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Eureka
-EUREKA_SERVER_URL=http://localhost:8761/eureka/
-
-# Config Server
-CONFIG_SERVER_URL=http://localhost:8888
+cp .env.example .env
 ```
+
+Consulta `.env.example` para ver todas las variables requeridas y su descripcion.
 
 ---
 

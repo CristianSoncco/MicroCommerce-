@@ -1,0 +1,9 @@
+{
+  "name": "Nuevo Producto Test",
+  "description": "Producto creado para pruebas de integracion",
+  "price": 149.99,
+  "stock": 30,
+  "category": "Electronics",
+  "imageUrl": "https://example.com/images/nuevo-producto.jpg",
+  "active": true
+}

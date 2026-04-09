@@ -1,0 +1,38 @@
+# Test configuration / Configuracion para tests
+
+spring:
+  application:
+    name: user-service-test
+
+  # Desactivar Config Server en tests
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+# JWT configuration for tests
+jwt:
+  secret: bWljcm9jb21tZXJjZS1zZWNyZXQta2V5LWZvci1kZXZlbG9wbWVudC1vbmx5LWNoYW5nZS1pbi1wcm9kdWN0aW9u
+  expiration: 86400000
+
+# Eureka desactivado para tests
+eureka:
+  client:
+    enabled: false
+
+# Actuator solo health para tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# Logs en nivel WARN para tests (menos verbose)
+logging:
+  level:
+    root: WARN
+    com.microcommerce.user: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.testcontainers: INFO

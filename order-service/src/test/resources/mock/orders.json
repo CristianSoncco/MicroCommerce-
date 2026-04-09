@@ -1,0 +1,44 @@
+[
+  {
+    "userId": 1,
+    "shippingAddress": "Av. Principal 123, Lima, Peru",
+    "paymentMethod": "CREDIT_CARD",
+    "notes": "Primer pedido",
+    "items": [
+      {
+        "productId": 1,
+        "productName": "Laptop HP",
+        "quantity": 1,
+        "unitPrice": 999.99
+      }
+    ]
+  },
+  {
+    "userId": 1,
+    "shippingAddress": "Av. Secundaria 456, Lima, Peru",
+    "paymentMethod": "DEBIT_CARD",
+    "notes": "Segundo pedido",
+    "items": [
+      {
+        "productId": 2,
+        "productName": "Mouse Logitech",
+        "quantity": 3,
+        "unitPrice": 29.99
+      }
+    ]
+  },
+  {
+    "userId": 2,
+    "shippingAddress": "Jr. Union 789, Arequipa, Peru",
+    "paymentMethod": "CASH",
+    "notes": "Pedido de otro usuario",
+    "items": [
+      {
+        "productId": 3,
+        "productName": "Teclado Mecánico",
+        "quantity": 1,
+        "unitPrice": 149.99
+      }
+    ]
+  }
+]

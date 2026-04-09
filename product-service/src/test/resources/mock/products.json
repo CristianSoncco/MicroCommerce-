@@ -1,0 +1,65 @@
+[
+  {
+    "name": "Laptop HP Pavilion",
+    "description": "Laptop HP Pavilion 15 pulgadas con procesador Intel i7",
+    "price": 899.99,
+    "stock": 25,
+    "category": "Electronics",
+    "imageUrl": "https://example.com/images/laptop-hp.jpg",
+    "active": true
+  },
+  {
+    "name": "Mouse Logitech MX Master",
+    "description": "Mouse inalambrico ergonomico con sensor de alta precision",
+    "price": 79.99,
+    "stock": 100,
+    "category": "Electronics",
+    "imageUrl": "https://example.com/images/mouse-logitech.jpg",
+    "active": true
+  },
+  {
+    "name": "Teclado Mecanico Corsair",
+    "description": "Teclado mecanico RGB con switches Cherry MX",
+    "price": 129.99,
+    "stock": 50,
+    "category": "Electronics",
+    "imageUrl": "https://example.com/images/teclado-corsair.jpg",
+    "active": true
+  },
+  {
+    "name": "Monitor Samsung 27 4K",
+    "description": "Monitor Samsung 27 pulgadas 4K UHD IPS",
+    "price": 449.99,
+    "stock": 15,
+    "category": "Electronics",
+    "imageUrl": "https://example.com/images/monitor-samsung.jpg",
+    "active": true
+  },
+  {
+    "name": "Libro Clean Code",
+    "description": "Clean Code: A Handbook of Agile Software Craftsmanship por Robert C. Martin",
+    "price": 39.99,
+    "stock": 200,
+    "category": "Books",
+    "imageUrl": "https://example.com/images/clean-code.jpg",
+    "active": true
+  },
+  {
+    "name": "Producto Inactivo",
+    "description": "Este producto esta desactivado para pruebas",
+    "price": 9.99,
+    "stock": 5,
+    "category": "Electronics",
+    "imageUrl": null,
+    "active": false
+  },
+  {
+    "name": "Producto Sin Stock",
+    "description": "Este producto no tiene stock disponible",
+    "price": 19.99,
+    "stock": 0,
+    "category": "Books",
+    "imageUrl": null,
+    "active": true
+  }
+]

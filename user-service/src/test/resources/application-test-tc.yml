@@ -1,0 +1,10 @@
+# Test profile with TestContainers (PostgreSQL via TC)
+# Perfil de test con TestContainers (PostgreSQL via TC)
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true

@@ -1,0 +1,97 @@
+# Order Service Configuration
+# Configuracion del Servicio de Pedidos
+
+server:
+  port: 8082
+
+spring:
+  application:
+    name: order-service
+
+  # MongoDB Configuration
+  # Configuracion de MongoDB
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/orderdb
+      auto-index-creation: true
+
+  # Spring Cloud Config Client
+  # Cliente de Spring Cloud Config
+  cloud:
+    config:
+      enabled: false
+      uri: http://localhost:8888
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 1000
+        max-interval: 2000
+        multiplier: 1.1
+
+# Eureka Client Configuration
+# Configuracion de Cliente Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+
+# Resilience4j Configuration
+# Configuracion de Resilience4j para Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      productService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        minimum-number-of-calls: 5
+  retry:
+    instances:
+      productService:
+        max-attempts: 3
+        wait-duration: 1000
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+  timelimiter:
+    instances:
+      productService:
+        timeout-duration: 5s
+
+# Actuator Configuration
+# Configuracion de Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging Configuration
+# Configuracion de Logs
+logging:
+  level:
+    com.microcommerce.order: DEBUG
+    org.springframework.web: INFO
+    org.springframework.data.mongodb: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

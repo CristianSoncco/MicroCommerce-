@@ -1,8 +1,11 @@
 # Docker Compose for local development
 # Docker Compose para desarrollo local
-#
+#  
 # Este archivo es para desarrollo local SOLAMENTE
 # This file is for local development ONLY
+#
+# IMPORTANTE: Copia .env.example a .env antes de ejecutar
+# IMPORTANT: Copy .env.example to .env before running
 #
 # Para iniciar todos los servicios de infraestructura:
 # To start all infrastructure services:
@@ -20,15 +23,71 @@ services:
     image: postgres:16-alpine
     container_name: postgres-product
     environment:
-      POSTGRES_DB: productdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - product-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microcommerce-network
+
+  # PostgreSQL for User Service
+  postgres-user:
+    image: postgres:16-alpine
+    container_name: postgres-user
+    environment:
+      POSTGRES_DB: ${USER_POSTGRES_DB:-userdb}
+      POSTGRES_USER: ${USER_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${USER_POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microcommerce-network
+
+  # PostgreSQL for Payment Service
+  postgres-payment:
+    image: postgres:16-alpine
+    container_name: postgres-payment
+    environment:
+      POSTGRES_DB: ${PAYMENT_POSTGRES_DB:-paymentdb}
+      POSTGRES_USER: ${PAYMENT_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${PAYMENT_POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5434:5432"
+    volumes:
+      - payment-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microcommerce-network
+
+  # MongoDB for Order Service
+  mongo-order:
+    image: mongo:7-jammy
+    container_name: mongo-order
+    ports:
+      - "27017:27017"
+    volumes:
+      - order-mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,6 +113,12 @@ services:
 
 volumes:
   product-data:
+    driver: local
+  user-data:
+    driver: local
+  payment-data:
+    driver: local
+  order-mongo-data:
     driver: local
   redis-data:
     driver: local
