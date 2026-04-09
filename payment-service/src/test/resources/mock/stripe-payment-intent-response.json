@@ -1,0 +1,12 @@
+{
+  "id": "pi_test_123456789",
+  "object": "payment_intent",
+  "amount": 9999,
+  "currency": "usd",
+  "status": "succeeded",
+  "clientSecret": "pi_test_123456789_secret_abc",
+  "paymentMethod": "pm_test_visa_001",
+  "latestCharge": "ch_test_charge_001",
+  "description": "Order #1 payment",
+  "created": 1700000000
+}

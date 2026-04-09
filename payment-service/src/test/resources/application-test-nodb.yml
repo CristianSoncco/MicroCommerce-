@@ -1,17 +1,32 @@
+# Test configuration without database / Configuracion de test sin base de datos
+# Used for pure unit tests that mock the repository layer
+
 spring:
+  application:
+    name: payment-service-test-nodb
+
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+
+# Stripe test configuration
+stripe:
+  api:
+    key: sk_test_fake_key_for_unit_tests
+    base-url: https://api.stripe.com/v1
 
 eureka:
   client:
     enabled: false
 
-stripe:
-  api:
-    key: sk_test_placeholder
-    base-url: https://api.stripe.com/v1
-  webhook:
-    secret: whsec_placeholder
+logging:
+  level:
+    root: WARN
+    com.microcommerce.payment: INFO
