@@ -9,6 +9,7 @@ import com.microcommerce.payment.dto.response.StripePaymentIntentResponse;
 import com.microcommerce.payment.dto.response.StripeRefundResponse;
 import com.microcommerce.payment.entity.Payment;
 import com.microcommerce.payment.entity.PaymentStatus;
+import com.microcommerce.payment.event.PaymentEventPublisher;
 import com.microcommerce.payment.exception.InvalidPaymentStateException;
 import com.microcommerce.payment.exception.PaymentAlreadyProcessedException;
 import com.microcommerce.payment.exception.PaymentNotFoundException;
@@ -35,6 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final StripeClient stripeClient;
+    private final PaymentEventPublisher paymentEventPublisher;
 
     @Override
     public PaymentResponse processPayment(PaymentRequest request) {
@@ -97,6 +99,15 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment = paymentRepository.save(payment);
+
+        // Publish event based on final payment status
+        // Publicar evento segun el estado final del pago
+        if (payment.getStatus() == PaymentStatus.COMPLETED) {
+            paymentEventPublisher.publishPaymentCompleted(payment);
+        } else if (payment.getStatus() == PaymentStatus.FAILED) {
+            paymentEventPublisher.publishPaymentFailed(payment);
+        }
+
         return paymentMapper.toResponse(payment);
     }
 
@@ -188,6 +199,13 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment = paymentRepository.save(payment);
+
+        // Publish PAYMENT_REFUNDED event when refund completes successfully
+        // Publicar evento PAYMENT_REFUNDED cuando el reembolso se completa exitosamente
+        if (payment.getStatus() == PaymentStatus.REFUNDED) {
+            paymentEventPublisher.publishPaymentRefunded(payment);
+        }
+
         return paymentMapper.toResponse(payment);
     }
 

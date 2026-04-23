@@ -9,6 +9,7 @@ import com.microcommerce.payment.dto.response.StripeRefundResponse;
 import com.microcommerce.payment.entity.Payment;
 import com.microcommerce.payment.entity.PaymentMethod;
 import com.microcommerce.payment.entity.PaymentStatus;
+import com.microcommerce.payment.event.PaymentEventPublisher;
 import com.microcommerce.payment.exception.InvalidPaymentStateException;
 import com.microcommerce.payment.exception.PaymentAlreadyProcessedException;
 import com.microcommerce.payment.exception.PaymentGatewayException;
@@ -52,6 +53,9 @@ class PaymentServiceImplTest {
 
     @Mock
     private StripeClient stripeClient;
+
+    @Mock
+    private PaymentEventPublisher paymentEventPublisher;
 
     @InjectMocks
     private PaymentServiceImpl paymentService;

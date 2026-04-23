@@ -3,6 +3,7 @@ package com.microcommerce.order.service;
 import com.microcommerce.order.dto.OrderDTO;
 import com.microcommerce.order.entity.Order;
 import com.microcommerce.order.entity.Order.OrderStatus;
+import com.microcommerce.order.event.OrderEventPublisher;
 import com.microcommerce.order.exception.EmptyOrderException;
 import com.microcommerce.order.exception.InvalidOrderStatusException;
 import com.microcommerce.order.exception.OrderNotFoundException;
@@ -31,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final OrderEventPublisher orderEventPublisher;
 
     /**
      * Valid status transitions map.
@@ -70,6 +72,11 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         log.info("Pedido creado satisfactoriamente con ID: {}", savedOrder.getId());
+
+        // Publish ORDER_CREATED event for downstream consumers
+        // Publicar evento ORDER_CREATED para consumidores downstream
+        orderEventPublisher.publishOrderCreated(savedOrder);
+
         return savedOrder;
     }
 
@@ -176,6 +183,13 @@ public class OrderServiceImpl implements OrderService {
         Order updatedOrder = orderRepository.save(order);
 
         log.info("Estado del pedido {} actualizado de {} a {}", id, currentStatus, newStatus);
+
+        // Publish ORDER_CANCELLED when the order is cancelled
+        // Publicar ORDER_CANCELLED cuando el pedido se cancela
+        if (newStatus == OrderStatus.CANCELLED) {
+            orderEventPublisher.publishOrderCancelled(updatedOrder);
+        }
+
         return updatedOrder;
     }
 

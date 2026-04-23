@@ -62,6 +62,9 @@
 - **MongoDB** - Order Service (planned)
 - **Redis 7** - Distributed Cache
 
+### Messaging
+- **RabbitMQ 3.13** - Event-Driven Communication (Order <-> Payment)
+
 ### Build & Deploy
 - **Maven 3.9+** - Build tool
 - **Docker & Docker Compose** - Containerization
@@ -222,13 +225,26 @@ MicroCommerce/
   -  REST Controller
   -  Tests unitarios e integración
 
+### [IMPLEMENTADO] Event-Driven con RabbitMQ
+
+- Exchanges topic: `orders.exchange`, `payments.exchange`
+- Eventos publicados por **Order Service**:
+  - `ORDER_CREATED` (routing key `order.created`)
+  - `ORDER_CANCELLED` (routing key `order.cancelled`)
+- Eventos publicados por **Payment Service**:
+  - `PAYMENT_COMPLETED` (routing key `payment.completed`)
+  - `PAYMENT_FAILED` (routing key `payment.failed`)
+  - `PAYMENT_REFUNDED` (routing key `payment.refunded`)
+- **Order Service** consume `payment.#` y actualiza el pedido a `PAID` cuando recibe `PAYMENT_COMPLETED`
+- Serializacion JSON via `Jackson2JsonMessageConverter`
+- Dead Letter Queue para eventos de pago rechazados
+- RabbitMQ Management UI: http://localhost:15672 (guest/guest)
+
 ###  [PRÓXIMOS] | Next
 
-- User Service con autenticación JWT
-- Payment Service con API externa
-- Event-driven architecture con RabbitMQ
-- Payment Service con integración externa
-- Tests unitarios e integración
+- Logging centralizado con ELK
+- Monitoring con Prometheus y Grafana
+- API Versioning
 - Despliegue en Kubernetes
 - CI/CD Pipeline
 
