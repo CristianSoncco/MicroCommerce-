@@ -65,6 +65,12 @@
 ### Messaging
 - **RabbitMQ 3.13** - Event-Driven Communication (Order <-> Payment)
 
+### Observability | Observabilidad
+- **Elasticsearch 8.12** - Log storage and indexing
+- **Logstash 8.12** - Log ingestion pipeline
+- **Kibana 8.12** - Log visualization UI
+- **logstash-logback-encoder** - JSON log shipping from Spring Boot
+
 ### Build & Deploy
 - **Maven 3.9+** - Build tool
 - **Docker & Docker Compose** - Containerization
@@ -353,12 +359,41 @@ Consulta `.env.example` para ver todas las variables requeridas y su descripcion
 
 ---
 
+## Centralized Logging | Logging Centralizado (ELK)
+
+**ES:** MicroCommerce integra el stack ELK (Elasticsearch, Logstash, Kibana) para centralizar los logs de todos los microservicios. Los servicios envian logs estructurados en JSON a Logstash mediante `logstash-logback-encoder`.
+
+**EN:** MicroCommerce integrates the ELK stack (Elasticsearch, Logstash, Kibana) to centralize logs from every microservice. Services emit structured JSON logs to Logstash via `logstash-logback-encoder`.
+
+### Activacion | Enable
+
+```bash
+# 1. Arrancar el stack ELK
+docker-compose -f docker-compose-dev.yml up -d elasticsearch logstash kibana
+
+# 2. Exportar variables y arrancar los microservicios
+export LOGSTASH_ENABLED=true
+export LOGSTASH_HOST=localhost
+export LOGSTASH_PORT=5000
+```
+
+### Endpoints
+
+- Elasticsearch: http://localhost:9200
+- Kibana: http://localhost:5601
+- Logstash (TCP input): localhost:5000
+
+Mas detalles en [elk/README.md](./elk/README.md).
+
+---
+
 ## Documentación Adicional | Additional Documentation
 
 - [Product Service README](./product-service/README.md)
 - [Eureka Server README](./eureka-server/README.md)
 - [Config Server README](./config-server/README.md)
 - [API Gateway README](./api-gateway/README.md)
+- [ELK Centralized Logging](./elk/README.md)
 - [Architecture Documentation](./MICROSERVICES_ARCHITECTURE.md)
 
 ---

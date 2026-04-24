@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Logback configuration for User Service
+    Configuracion de Logback para User Service
+
+    Sends structured JSON logs to Logstash when LOGSTASH_ENABLED=true
+    Envia logs estructurados JSON a Logstash cuando LOGSTASH_ENABLED=true
+-->
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="user-service"/>
+
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [${appName}] %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <springProperty scope="context" name="logstashEnabled" source="logstash.enabled" defaultValue="false"/>
+    <springProperty scope="context" name="logstashHost" source="logstash.host" defaultValue="localhost"/>
+    <springProperty scope="context" name="logstashPort" source="logstash.port" defaultValue="5000"/>
+
+    <if condition='property("logstashEnabled").equalsIgnoreCase("true")'>
+        <then>
+            <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+                <destination>${logstashHost}:${logstashPort}</destination>
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <customFields>{"service_name":"${appName}","environment":"${SPRING_PROFILES_ACTIVE:-default}"}</customFields>
+                    <includeMdc>true</includeMdc>
+                    <includeContext>true</includeContext>
+                </encoder>
+                <keepAliveDuration>5 minutes</keepAliveDuration>
+                <reconnectionDelay>5 seconds</reconnectionDelay>
+            </appender>
+
+            <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
+                <appender-ref ref="LOGSTASH"/>
+                <queueSize>1024</queueSize>
+                <discardingThreshold>0</discardingThreshold>
+                <neverBlock>true</neverBlock>
+            </appender>
+        </then>
+    </if>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <if condition='property("logstashEnabled").equalsIgnoreCase("true")'>
+            <then>
+                <appender-ref ref="ASYNC_LOGSTASH"/>
+            </then>
+        </if>
+    </root>
+
+    <logger name="com.microcommerce.user" level="DEBUG"/>
+
+</configuration>
