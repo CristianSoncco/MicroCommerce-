@@ -1,20 +1,33 @@
+# Test configuration with TestContainers / Configuracion de test con TestContainers
+# Used for integration tests with real PostgreSQL
+
 spring:
+  application:
+    name: payment-service-test-tc
+
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+
+# Stripe test configuration
+stripe:
+  api:
+    key: sk_test_fake_key_for_integration_tests
+    base-url: https://api.stripe.com/v1
 
 eureka:
   client:
     enabled: false
 
-stripe:
-  api:
-    key: sk_test_placeholder
-    base-url: https://api.stripe.com/v1
-  webhook:
-    secret: whsec_placeholder
+logging:
+  level:
+    root: WARN
+    com.microcommerce.payment: INFO
+    org.testcontainers: INFO

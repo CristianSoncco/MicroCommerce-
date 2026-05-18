@@ -1,0 +1,29 @@
+[
+  {
+    "orderId": 1,
+    "userId": 100,
+    "amount": 99.99,
+    "currency": "USD",
+    "paymentMethod": "CREDIT_CARD",
+    "description": "Order #1 payment",
+    "paymentToken": "pm_test_visa_001"
+  },
+  {
+    "orderId": 2,
+    "userId": 100,
+    "amount": 249.50,
+    "currency": "USD",
+    "paymentMethod": "DEBIT_CARD",
+    "description": "Order #2 payment",
+    "paymentToken": "pm_test_debit_002"
+  },
+  {
+    "orderId": 3,
+    "userId": 200,
+    "amount": 15.00,
+    "currency": "EUR",
+    "paymentMethod": "DIGITAL_WALLET",
+    "description": "Order #3 payment",
+    "paymentToken": "pm_test_wallet_003"
+  }
+]

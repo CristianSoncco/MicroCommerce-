@@ -1,0 +1,10 @@
+{
+  "id": "re_test_refund_001",
+  "object": "refund",
+  "amount": 5000,
+  "currency": "usd",
+  "paymentIntent": "pi_test_123456789",
+  "status": "succeeded",
+  "reason": "requested_by_customer",
+  "created": 1700001000
+}
