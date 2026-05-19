@@ -15,25 +15,29 @@ spring:
           predicates:
             - Path=/api/products/**
           filters:
-            - StripPrefix=1
+            - AuthenticationFilter
+        - id: auth-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
         - id: order-service
           uri: lb://order-service
           predicates:
             - Path=/api/orders/**
           filters:
-            - StripPrefix=1
+            - AuthenticationFilter
         - id: user-service
           uri: lb://user-service
           predicates:
             - Path=/api/users/**
           filters:
-            - StripPrefix=1
+            - AuthenticationFilter
         - id: payment-service
           uri: lb://payment-service
           predicates:
             - Path=/api/payments/**
           filters:
-            - StripPrefix=1
+            - AuthenticationFilter
       discovery:
         locator:
           enabled: true
@@ -42,5 +46,5 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,gateway
 

@@ -15,11 +15,22 @@ spring:
           predicates:
             - Path=/api/products/**
           filters:
-            - StripPrefix=1
+            - AuthenticationFilter
             - name: CircuitBreaker
               args:
                 name: product-service
                 fallbackUri: forward:/fallback/product-service
+
+        # Authentication routes exposed by user-service
+        - id: auth-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: user-service
+                fallbackUri: forward:/fallback/user-service
 
         # Order Service routes
         - id: order-service
@@ -27,7 +38,6 @@ spring:
           predicates:
             - Path=/api/orders/**
           filters:
-            - StripPrefix=1
             - AuthenticationFilter
             - name: CircuitBreaker
               args:
@@ -40,7 +50,7 @@ spring:
           predicates:
             - Path=/api/users/**
           filters:
-            - StripPrefix=1
+            - AuthenticationFilter
             - name: CircuitBreaker
               args:
                 name: user-service
@@ -52,7 +62,6 @@ spring:
           predicates:
             - Path=/api/payments/**
           filters:
-            - StripPrefix=1
             - AuthenticationFilter
             - name: CircuitBreaker
               args:

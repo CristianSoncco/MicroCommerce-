@@ -2,13 +2,12 @@ package com.microcommerce.gateway.filter;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
@@ -21,19 +20,13 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
-
-            // List of public endpoints that don't require authentication
-            List<String> publicEndpoints = List.of(
-                "/api/users/register",
-                "/api/users/login",
-                "/api/products"  // GET products is public
-            );
-
             String path = request.getPath().toString();
-            
-            // Check if endpoint is public
-            boolean isPublic = publicEndpoints.stream()
-                .anyMatch(path::startsWith);
+            HttpMethod method = request.getMethod();
+
+            boolean isAuthEndpoint = path.startsWith("/api/auth/");
+            boolean isPublicProductRead = HttpMethod.GET.equals(method)
+                    && path.startsWith("/api/products");
+            boolean isPublic = isAuthEndpoint || isPublicProductRead;
 
             if (isPublic) {
                 return chain.filter(exchange);
