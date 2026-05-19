@@ -117,3 +117,6 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     reactor.netty.http.client: DEBUG
 
+jwt:
+  secret: ${JWT_SECRET:bWljcm9jb21tZXJjZS1zZWNyZXQta2V5LWZvci1kZXZlbG9wbWVudC1vbmx5LWNoYW5nZS1pbi1wcm9kdWN0aW9u}
+

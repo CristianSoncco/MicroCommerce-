@@ -1,5 +1,6 @@
 package com.microcommerce.gateway.filter;
 
+import com.microcommerce.gateway.security.JwtTokenValidator;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpMethod;
@@ -12,8 +13,11 @@ import reactor.core.publisher.Mono;
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
-    public AuthenticationFilter() {
+    private final JwtTokenValidator jwtTokenValidator;
+
+    public AuthenticationFilter(JwtTokenValidator jwtTokenValidator) {
         super(Config.class);
+        this.jwtTokenValidator = jwtTokenValidator;
     }
 
     @Override
@@ -48,12 +52,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 return response.setComplete();
             }
 
-            // Extract token (for future JWT validation)
             String token = authHeader.substring(7);
-            
-            // TODO: When User Service is implemented, validate JWT token here
-            // For now, we just check the format
-            
+
+            if (!jwtTokenValidator.validateToken(token)) {
+                ServerHttpResponse response = exchange.getResponse();
+                response.setStatusCode(HttpStatus.UNAUTHORIZED);
+                return response.setComplete();
+            }
+
             return chain.filter(exchange);
         };
     }
