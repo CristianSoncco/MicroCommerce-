@@ -125,5 +125,14 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <dependencies>
+        <!-- Required by Logback conditional processing used in logback-spring.xml -->
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>3.1.12</version>
+        </dependency>
+    </dependencies>
 </project>
 
