@@ -89,11 +89,11 @@
 |--------------|--------|---------------|--------|-------------|
 | **Eureka Server** | 8761 | - | [COMPLETO] | Service Discovery |
 | **Config Server** | 8888 | Git (local) | [COMPLETO] | Configuration Management |
-| **API Gateway** | 8080 | - | [COMPLETO] | Routing & Load Balancing |
+| **API Gateway** | 8080 | - | [COMPLETO] | Routing, Load Balancing y JWT validation |
 | **Product Service** | 8081 | PostgreSQL + Redis | [COMPLETO] | Product Catalog Management |
-| **Order Service** | 8082 | MongoDB | [OPERATIVO] | Order Processing & Orchestration |
-| **User Service** | 8083 | PostgreSQL | [OPERATIVO] | User & Authentication |
-| **Payment Service** | 8084 | PostgreSQL + Stripe | [OPERATIVO] | Payment Processing |
+| **Order Service** | 8082 | MongoDB + RabbitMQ | [OPERATIVO] | Order Processing, Querying and Event Consumption |
+| **User Service** | 8083 | PostgreSQL | [OPERATIVO] | User Registration, Login and JWT |
+| **Payment Service** | 8084 | PostgreSQL + Stripe + RabbitMQ | [OPERATIVO] | Payment Processing and Event Publishing |
 
 ---
 
@@ -107,7 +107,7 @@
 - **PostgreSQL 16** (o usar Docker)
 - **Redis 7** (o usar Docker)
 
-### Paso 1: Iniciar Infraestructura (PostgreSQL + Redis)
+### Paso 1: Iniciar Infraestructura
 
 **IMPORTANTE:** Antes de ejecutar Docker Compose, configura las variables de entorno:
 
@@ -119,7 +119,7 @@ cp .env.example .env
 # 2. Edita .env y cambia las credenciales (especialmente para producción)
 # El archivo .env NO se sube a Git (está en .gitignore)
 
-# 3. Inicia los servicios
+# 3. Inicia los servicios de infraestructura
 docker-compose -f docker-compose-dev.yml up -d
 ```
 
@@ -135,6 +135,7 @@ mvn spring-boot:run
 ### Paso 3: Iniciar Config Server
 
 ```bash
+$env:GIT_BRANCH="feat/22-centralized-logging-elk"   # PowerShell en local, opcional
 cd config-server
 mvn spring-boot:run
 ```
@@ -160,6 +161,31 @@ mvn spring-boot:run
 **Verificar:** http://localhost:8081/actuator/health
 
 **Swagger UI:** http://localhost:8081/swagger-ui.html
+
+### Paso 6: Iniciar Servicios Restantes
+
+```bash
+cd user-service && mvn spring-boot:run
+cd order-service && mvn spring-boot:run
+cd payment-service && mvn spring-boot:run
+```
+
+**Verificar:**
+- User Service: http://localhost:8083/actuator/health
+- Order Service: http://localhost:8082/actuator/health
+- Payment Service: http://localhost:8084/actuator/health
+
+### Paso 7: Activar ELK para un Microservicio
+
+```powershell
+$env:LOGSTASH_ENABLED="true"
+$env:LOGSTASH_HOST="localhost"
+$env:LOGSTASH_PORT="5000"
+cd order-service
+mvn spring-boot:run
+```
+
+**Nota:** Para ver logs en Kibana, cada microservicio debe iniciarse con `LOGSTASH_ENABLED=true` cuando Logstash ya este levantado.
 
 ---
 
@@ -223,13 +249,25 @@ MicroCommerce/
 
 ### [EN DESARROLLO] | In Development
 
-- **Order Service** (Commit 9/12 completado)
-  -  Entidades Order y OrderItem
-  -  Repositorios JPA con queries personalizadas
-  -  DTOs con validación
-  -  Service Layer con Resilience4j (próximo)
-  -  REST Controller
-  -  Tests unitarios e integración
+- **Order Service**
+  - Creacion y consulta de pedidos
+  - Persistencia en MongoDB
+  - Consumo de eventos de pago via RabbitMQ
+  - Cambio automatico de `PENDING` a `PAID` con `PAYMENT_COMPLETED`
+  - Pendiente: ampliar cobertura de tests y revisar observabilidad completa
+
+- **User Service**
+  - Registro de usuarios
+  - Login
+  - Emision de JWT
+  - Integracion con gateway validada
+  - Pendiente: ampliar cobertura de tests y revisar documentacion global asociada
+
+- **Payment Service**
+  - Creacion y consulta de pagos
+  - Integracion con Stripe en entorno local
+  - Publicacion de eventos `payment.*`
+  - Pendiente: estabilizacion tecnica interna y limpieza de compilacion del modulo
 
 ### [IMPLEMENTADO] Event-Driven con RabbitMQ
 
@@ -245,17 +283,25 @@ MicroCommerce/
 - Serializacion JSON via `Jackson2JsonMessageConverter`
 - Dead Letter Queue para eventos de pago rechazados
 - RabbitMQ Management UI: http://localhost:15672 (guest/guest)
+- Flujo validado en runtime: `payment.completed` actualiza el pedido a `PAID`
 
-###  [PRÓXIMOS] | Next
+### [IMPLEMENTADO PARCIALMENTE] | Partially Implemented
 
-- Logging centralizado con ELK
+- **Centralized Logging with ELK**
+  - Logstash operativo
+  - Elasticsearch operativo
+  - Kibana operativo
+  - Ingesta validada al menos para `order-service`
+  - Pendiente: validar todos los microservicios relevantes con `LOGSTASH_ENABLED=true`
+
+### [PROXIMOS] | Next
+
 - Monitoring con Prometheus y Grafana
 - API Versioning
 - Despliegue en Kubernetes
 - CI/CD Pipeline
 
 ---
-
 ## Endpoints Principales | Main Endpoints
 
 ### Product Service (via Gateway)
@@ -472,3 +518,4 @@ MIT License - ver [LICENSE](LICENSE) para más detalles.
 ---
 
 **Si te gusta este proyecto, dale una estrella! | If you like this project, give it a star!**
+
