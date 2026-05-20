@@ -131,7 +131,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PaymentResponse> getPaymentsByOrderId(Long orderId) {
+    public List<PaymentResponse> getAllPayments() {
+        log.debug("Buscando todos los pagos");
+        return paymentRepository.findAll().stream()
+                .map(paymentMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> getPaymentsByOrderId(String orderId) {
         log.debug("Buscando pagos para orden: {}", orderId);
         return paymentRepository.findByOrderId(orderId).stream()
                 .map(paymentMapper::toResponse)

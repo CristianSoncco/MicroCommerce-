@@ -22,7 +22,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      * Find payments by order ID
      * Buscar pagos por ID de orden
      */
-    List<Payment> findByOrderId(Long orderId);
+    List<Payment> findByOrderId(String orderId);
 
     /**
      * Find payments by user ID
@@ -67,5 +67,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      * Check if a payment exists for a given order
      * Verificar si existe un pago para una orden dada
      */
-    boolean existsByOrderIdAndStatusIn(Long orderId, List<PaymentStatus> statuses);
+    boolean existsByOrderIdAndStatusIn(String orderId, List<PaymentStatus> statuses);
 }

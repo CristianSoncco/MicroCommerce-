@@ -58,7 +58,7 @@ class PaymentRepositoryIntegrationTest {
         paymentRepository.deleteAll();
 
         completedPayment = paymentRepository.save(Payment.builder()
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
@@ -70,7 +70,7 @@ class PaymentRepositoryIntegrationTest {
                 .build());
 
         pendingPayment = paymentRepository.save(Payment.builder()
-                .orderId(101L)
+                .orderId("101")
                 .userId(200L)
                 .amount(new BigDecimal("49.50"))
                 .currency("USD")
@@ -80,7 +80,7 @@ class PaymentRepositoryIntegrationTest {
                 .build());
 
         failedPayment = paymentRepository.save(Payment.builder()
-                .orderId(102L)
+                .orderId("102")
                 .userId(300L)
                 .amount(new BigDecimal("15.00"))
                 .currency("EUR")
@@ -95,11 +95,11 @@ class PaymentRepositoryIntegrationTest {
     @DisplayName("findByOrderId - debe retornar pagos de la orden")
     void findByOrderId_ReturnsPaymentsForOrder() {
         // When
-        List<Payment> result = paymentRepository.findByOrderId(100L);
+        List<Payment> result = paymentRepository.findByOrderId("100");
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getOrderId()).isEqualTo(100L);
+        assertThat(result.get(0).getOrderId()).isEqualTo("100");
         assertThat(result.get(0).getStatus()).isEqualTo(PaymentStatus.COMPLETED);
     }
 
@@ -107,7 +107,7 @@ class PaymentRepositoryIntegrationTest {
     @DisplayName("findByOrderId - orden sin pagos - debe retornar lista vacia")
     void findByOrderId_NoPayments_ReturnsEmptyList() {
         // When
-        List<Payment> result = paymentRepository.findByOrderId(999L);
+        List<Payment> result = paymentRepository.findByOrderId("999");
 
         // Then
         assertThat(result).isEmpty();
@@ -189,7 +189,7 @@ class PaymentRepositoryIntegrationTest {
     void existsByOrderIdAndStatusIn_ActivePayment_ReturnsTrue() {
         // When
         boolean exists = paymentRepository.existsByOrderIdAndStatusIn(
-                100L, List.of(PaymentStatus.COMPLETED, PaymentStatus.PROCESSING));
+                "100", List.of(PaymentStatus.COMPLETED, PaymentStatus.PROCESSING));
 
         // Then
         assertThat(exists).isTrue();
@@ -200,7 +200,7 @@ class PaymentRepositoryIntegrationTest {
     void existsByOrderIdAndStatusIn_NoActivePayment_ReturnsFalse() {
         // When
         boolean exists = paymentRepository.existsByOrderIdAndStatusIn(
-                102L, List.of(PaymentStatus.COMPLETED, PaymentStatus.PROCESSING));
+                "102", List.of(PaymentStatus.COMPLETED, PaymentStatus.PROCESSING));
 
         // Then
         assertThat(exists).isFalse();
@@ -211,7 +211,7 @@ class PaymentRepositoryIntegrationTest {
     void save_NewPayment_PersistsWithTimestamps() {
         // Given
         Payment newPayment = Payment.builder()
-                .orderId(500L)
+                .orderId("500")
                 .userId(600L)
                 .amount(new BigDecimal("200.00"))
                 .currency("USD")
@@ -226,7 +226,7 @@ class PaymentRepositoryIntegrationTest {
         // Then
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getCreatedAt()).isNotNull();
-        assertThat(saved.getOrderId()).isEqualTo(500L);
+        assertThat(saved.getOrderId()).isEqualTo("500");
         assertThat(saved.getAmount()).isEqualByComparingTo(new BigDecimal("200.00"));
     }
 

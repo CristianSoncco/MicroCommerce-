@@ -35,7 +35,7 @@ class PaymentMapperTest {
     void toEntity_ValidRequest_ReturnsPaymentEntity() {
         // Given
         PaymentRequest request = PaymentRequest.builder()
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
@@ -49,7 +49,7 @@ class PaymentMapperTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getOrderId()).isEqualTo(100L);
+        assertThat(result.getOrderId()).isEqualTo("100");
         assertThat(result.getUserId()).isEqualTo(200L);
         assertThat(result.getAmount()).isEqualByComparingTo(new BigDecimal("99.99"));
         assertThat(result.getCurrency()).isEqualTo("USD");
@@ -62,7 +62,7 @@ class PaymentMapperTest {
     void toEntity_NullCurrency_UsesDefaultUsd() {
         // Given
         PaymentRequest request = PaymentRequest.builder()
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("50.00"))
                 .currency(null)
@@ -96,7 +96,7 @@ class PaymentMapperTest {
         LocalDateTime now = LocalDateTime.now();
         Payment payment = Payment.builder()
                 .id(1L)
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
@@ -115,7 +115,7 @@ class PaymentMapperTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getOrderId()).isEqualTo(100L);
+        assertThat(result.getOrderId()).isEqualTo("100");
         assertThat(result.getUserId()).isEqualTo(200L);
         assertThat(result.getAmount()).isEqualByComparingTo(new BigDecimal("99.99"));
         assertThat(result.getCurrency()).isEqualTo("USD");
@@ -134,7 +134,7 @@ class PaymentMapperTest {
         // Given
         Payment payment = Payment.builder()
                 .id(1L)
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")

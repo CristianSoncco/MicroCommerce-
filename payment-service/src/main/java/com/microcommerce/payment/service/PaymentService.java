@@ -41,13 +41,21 @@ public interface PaymentService {
     PaymentResponse getPaymentByStripeIntentId(String stripePaymentIntentId);
 
     /**
+     * Get all payments
+     * Obtener todos los pagos
+     *
+     * @return list of payment responses
+     */
+    List<PaymentResponse> getAllPayments();
+
+    /**
      * Get all payments for an order
      * Obtener todos los pagos de una orden
      *
      * @param orderId the order ID
      * @return list of payment responses
      */
-    List<PaymentResponse> getPaymentsByOrderId(Long orderId);
+    List<PaymentResponse> getPaymentsByOrderId(String orderId);
 
     /**
      * Get all payments for a user

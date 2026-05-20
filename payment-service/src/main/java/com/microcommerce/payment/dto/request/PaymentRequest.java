@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 public class PaymentRequest {
 
     @NotNull(message = "El ID de la orden es obligatorio")
-    private Long orderId;
+    private String orderId;
 
     @NotNull(message = "El ID del usuario es obligatorio")
     private Long userId;

@@ -58,8 +58,8 @@
 - **Resilience4j** - Circuit Breaker
 
 ### Databases
-- **PostgreSQL 16** - Product & User Services
-- **MongoDB** - Order Service (planned)
+- **PostgreSQL 16** - Product, User and Payment Services
+- **MongoDB** - Order Service
 - **Redis 7** - Distributed Cache
 
 ### Messaging
@@ -91,9 +91,9 @@
 | **Config Server** | 8888 | Git (local) | [COMPLETO] | Configuration Management |
 | **API Gateway** | 8080 | - | [COMPLETO] | Routing & Load Balancing |
 | **Product Service** | 8081 | PostgreSQL + Redis | [COMPLETO] | Product Catalog Management |
-| **Order Service** | 8082 | PostgreSQL (5433) | [EN DESARROLLO] | Order Processing & Orchestration |
-| **User Service** | 8083 | PostgreSQL | [PENDIENTE] | User & Authentication |
-| **Payment Service** | 8084 | External API | [PENDIENTE] | Payment Processing |
+| **Order Service** | 8082 | MongoDB | [OPERATIVO] | Order Processing & Orchestration |
+| **User Service** | 8083 | PostgreSQL | [OPERATIVO] | User & Authentication |
+| **Payment Service** | 8084 | PostgreSQL + Stripe | [OPERATIVO] | Payment Processing |
 
 ---
 
