@@ -30,7 +30,10 @@ public class PaymentEventListener {
      * Handle incoming payment events.
      * Manejar eventos de pago entrantes.
      */
-    @RabbitListener(queues = RabbitMQConfig.ORDER_PAYMENT_EVENTS_QUEUE)
+    @RabbitListener(
+            queues = RabbitMQConfig.ORDER_PAYMENT_EVENTS_QUEUE,
+            containerFactory = "rabbitListenerContainerFactory"
+    )
     public void onPaymentEvent(PaymentEvent event) {
         if (event == null || event.getEventType() == null) {
             log.warn("Evento de pago recibido invalido, se descarta");
