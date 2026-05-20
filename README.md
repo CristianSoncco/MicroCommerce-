@@ -377,6 +377,52 @@ export LOGSTASH_HOST=localhost
 export LOGSTASH_PORT=5000
 ```
 
+**ES:** `LOGSTASH_ENABLED` no hace que los servicios ya arrancados empiecen a enviar logs por si solos. Cada microservicio debe iniciarse en una terminal donde esas variables ya esten definidas.
+
+**EN:** `LOGSTASH_ENABLED` does not make already running services start shipping logs automatically. Each microservice must be started in a terminal where those variables are already defined.
+
+**PowerShell (Windows):**
+
+```powershell
+$env:LOGSTASH_ENABLED="true"
+$env:LOGSTASH_HOST="localhost"
+$env:LOGSTASH_PORT="5000"
+cd order-service
+mvn spring-boot:run
+```
+
+### Kibana Data View
+
+**ES:**
+1. Abre `http://localhost:5601`
+2. Ve a `Stack Management -> Data Views`
+3. Pulsa `Create data view`
+4. Usa el patron `microcommerce-*`
+5. Selecciona `@timestamp` como campo temporal
+
+**EN:**
+1. Open `http://localhost:5601`
+2. Go to `Stack Management -> Data Views`
+3. Click `Create data view`
+4. Use the pattern `microcommerce-*`
+5. Select `@timestamp` as the time field
+
+### Verificacion | Verification
+
+```bash
+# Elasticsearch indexes
+curl "http://localhost:9200/_cat/indices/microcommerce-*?v"
+```
+
+```powershell
+# PowerShell
+Invoke-WebRequest "http://localhost:9200/_cat/indices/microcommerce-*?v" -UseBasicParsing
+```
+
+**ES:** Si no aparecen indices `microcommerce-*`, normalmente significa que el servicio no se inicio con `LOGSTASH_ENABLED=true` o que Logstash no estaba levantado al arrancarlo.
+
+**EN:** If `microcommerce-*` indices do not appear, it usually means the service was not started with `LOGSTASH_ENABLED=true` or Logstash was not up when the service started.
+
 ### Endpoints
 
 - Elasticsearch: http://localhost:9200
