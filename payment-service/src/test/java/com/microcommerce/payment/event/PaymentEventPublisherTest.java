@@ -44,7 +44,7 @@ class PaymentEventPublisherTest {
     void setUp() {
         payment = Payment.builder()
                 .id(42L)
-                .orderId(100L)
+                .orderId("100")
                 .userId(7L)
                 .amount(new BigDecimal("25.00"))
                 .currency("USD")

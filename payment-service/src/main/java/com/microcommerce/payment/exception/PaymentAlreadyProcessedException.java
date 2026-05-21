@@ -10,7 +10,7 @@ public class PaymentAlreadyProcessedException extends RuntimeException {
         super(message);
     }
 
-    public PaymentAlreadyProcessedException(Long orderId) {
+    public PaymentAlreadyProcessedException(String orderId) {
         super("Ya existe un pago completado o en proceso para la orden: " + orderId);
     }
 }

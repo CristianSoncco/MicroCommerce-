@@ -24,3 +24,13 @@ spring:
       hibernate:
         format_sql: true
 
+# Centralized logging (ELK) configuration
+# Configuracion de logging centralizado (ELK)
+#
+# Toggle shipping logs to Logstash via LOGSTASH_ENABLED env variable.
+# Activa el envio de logs a Logstash con la variable LOGSTASH_ENABLED.
+logstash:
+  enabled: ${LOGSTASH_ENABLED:false}
+  host: ${LOGSTASH_HOST:localhost}
+  port: ${LOGSTASH_PORT:5000}
+

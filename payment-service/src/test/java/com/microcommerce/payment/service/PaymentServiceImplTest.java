@@ -74,7 +74,7 @@ class PaymentServiceImplTest {
         // Setup pending payment
         pendingPayment = Payment.builder()
                 .id(1L)
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
@@ -88,7 +88,7 @@ class PaymentServiceImplTest {
         // Setup completed payment
         completedPayment = Payment.builder()
                 .id(2L)
-                .orderId(101L)
+                .orderId("101")
                 .userId(200L)
                 .amount(new BigDecimal("249.50"))
                 .currency("USD")
@@ -104,7 +104,7 @@ class PaymentServiceImplTest {
         // Default payment used in process tests
         payment = Payment.builder()
                 .id(1L)
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
@@ -117,7 +117,7 @@ class PaymentServiceImplTest {
 
         // Setup PaymentRequest
         paymentRequest = PaymentRequest.builder()
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
@@ -135,7 +135,7 @@ class PaymentServiceImplTest {
         // Setup PaymentResponse
         paymentResponse = PaymentResponse.builder()
                 .id(1L)
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency("USD")
@@ -182,7 +182,7 @@ class PaymentServiceImplTest {
     @DisplayName("processPayment - pago exitoso con Stripe - debe retornar PaymentResponse completado")
     void processPayment_SuccessfulStripePayment_ReturnsCompletedPaymentResponse() {
         // Given
-        when(paymentRepository.existsByOrderIdAndStatusIn(eq(100L), anyList())).thenReturn(false);
+        when(paymentRepository.existsByOrderIdAndStatusIn(eq("100"), anyList())).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(stripeClient.createPaymentIntent(any())).thenReturn(stripeSuccessResponse);
 
@@ -191,7 +191,7 @@ class PaymentServiceImplTest {
 
         // Then
         assertThat(result).isNotNull();
-        verify(paymentRepository).existsByOrderIdAndStatusIn(eq(100L), anyList());
+        verify(paymentRepository).existsByOrderIdAndStatusIn(eq("100"), anyList());
         verify(paymentMapper).toEntity(paymentRequest);
         verify(stripeClient).createPaymentIntent(any());
         verify(paymentRepository, times(3)).save(any(Payment.class));
@@ -201,7 +201,7 @@ class PaymentServiceImplTest {
     @DisplayName("processPayment - orden con pago existente - debe lanzar PaymentAlreadyProcessedException")
     void processPayment_ExistingActivePayment_ThrowsPaymentAlreadyProcessedException() {
         // Given
-        when(paymentRepository.existsByOrderIdAndStatusIn(eq(100L), anyList())).thenReturn(true);
+        when(paymentRepository.existsByOrderIdAndStatusIn(eq("100"), anyList())).thenReturn(true);
 
         // When & Then
         assertThatThrownBy(() -> paymentService.processPayment(paymentRequest))
@@ -220,7 +220,7 @@ class PaymentServiceImplTest {
                 .latestCharge(null)
                 .build();
 
-        when(paymentRepository.existsByOrderIdAndStatusIn(eq(100L), anyList())).thenReturn(false);
+        when(paymentRepository.existsByOrderIdAndStatusIn(eq("100"), anyList())).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(stripeClient.createPaymentIntent(any())).thenReturn(requiresActionResponse);
 
@@ -242,7 +242,7 @@ class PaymentServiceImplTest {
                 .latestCharge(null)
                 .build();
 
-        when(paymentRepository.existsByOrderIdAndStatusIn(eq(100L), anyList())).thenReturn(false);
+        when(paymentRepository.existsByOrderIdAndStatusIn(eq("100"), anyList())).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(stripeClient.createPaymentIntent(any())).thenReturn(unexpectedResponse);
 
@@ -257,7 +257,7 @@ class PaymentServiceImplTest {
     @DisplayName("processPayment - error de Stripe - debe marcar pago como FAILED")
     void processPayment_StripeException_PaymentMarkedAsFailed() {
         // Given
-        when(paymentRepository.existsByOrderIdAndStatusIn(eq(100L), anyList())).thenReturn(false);
+        when(paymentRepository.existsByOrderIdAndStatusIn(eq("100"), anyList())).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(stripeClient.createPaymentIntent(any()))
                 .thenThrow(new PaymentGatewayException("Error de conexion con Stripe"));
@@ -275,7 +275,7 @@ class PaymentServiceImplTest {
     void processPayment_NullCurrency_UsesDefaultUsd() {
         // Given
         PaymentRequest requestNullCurrency = PaymentRequest.builder()
-                .orderId(100L)
+                .orderId("100")
                 .userId(200L)
                 .amount(new BigDecimal("99.99"))
                 .currency(null)
@@ -283,7 +283,7 @@ class PaymentServiceImplTest {
                 .paymentToken("pm_test_visa_001")
                 .build();
 
-        when(paymentRepository.existsByOrderIdAndStatusIn(eq(100L), anyList())).thenReturn(false);
+        when(paymentRepository.existsByOrderIdAndStatusIn(eq("100"), anyList())).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(stripeClient.createPaymentIntent(any())).thenReturn(stripeSuccessResponse);
 
@@ -359,24 +359,24 @@ class PaymentServiceImplTest {
     @DisplayName("getPaymentsByOrderId - orden con pagos - debe retornar lista de PaymentResponse")
     void getPaymentsByOrderId_OrderWithPayments_ReturnsPaymentResponseList() {
         // Given
-        when(paymentRepository.findByOrderId(100L)).thenReturn(List.of(payment));
+        when(paymentRepository.findByOrderId("100")).thenReturn(List.of(payment));
 
         // When
-        List<PaymentResponse> result = paymentService.getPaymentsByOrderId(100L);
+        List<PaymentResponse> result = paymentService.getPaymentsByOrderId("100");
 
         // Then
         assertThat(result).hasSize(1);
-        verify(paymentRepository).findByOrderId(100L);
+        verify(paymentRepository).findByOrderId("100");
     }
 
     @Test
     @DisplayName("getPaymentsByOrderId - orden sin pagos - debe retornar lista vacia")
     void getPaymentsByOrderId_OrderWithNoPayments_ReturnsEmptyList() {
         // Given
-        when(paymentRepository.findByOrderId(999L)).thenReturn(Collections.emptyList());
+        when(paymentRepository.findByOrderId("999")).thenReturn(Collections.emptyList());
 
         // When
-        List<PaymentResponse> result = paymentService.getPaymentsByOrderId(999L);
+        List<PaymentResponse> result = paymentService.getPaymentsByOrderId("999");
 
         // Then
         assertThat(result).isEmpty();

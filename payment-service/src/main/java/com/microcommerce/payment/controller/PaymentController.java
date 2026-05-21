@@ -75,6 +75,24 @@ public class PaymentController {
     }
 
     /**
+     * Get all payments
+     * Obtener todos los pagos
+     */
+    @GetMapping
+    @Operation(
+        summary = "Listar pagos | List payments",
+        description = "Obtiene todos los pagos registrados | Gets all registered payments"
+    )
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> getAllPayments() {
+
+        log.info("Solicitud para listar todos los pagos");
+
+        List<PaymentResponse> responses = paymentService.getAllPayments();
+
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+
+    /**
      * Get payment by ID
      * Obtener pago por ID
      */
@@ -145,7 +163,7 @@ public class PaymentController {
     )
     public ResponseEntity<ApiResponse<List<PaymentResponse>>> getPaymentsByOrderId(
             @Parameter(description = "ID de la orden | Order ID")
-            @PathVariable Long orderId) {
+            @PathVariable String orderId) {
 
         log.info("Solicitud para obtener pagos de la orden: {}", orderId);
 
