@@ -1,6 +1,6 @@
 [
   {
-    "orderId": 1,
+    "orderId": "1",
     "userId": 100,
     "amount": 99.99,
     "currency": "USD",
@@ -9,7 +9,7 @@
     "paymentToken": "pm_test_visa_001"
   },
   {
-    "orderId": 2,
+    "orderId": "2",
     "userId": 100,
     "amount": 249.50,
     "currency": "USD",
@@ -18,7 +18,7 @@
     "paymentToken": "pm_test_debit_002"
   },
   {
-    "orderId": 3,
+    "orderId": "3",
     "userId": 200,
     "amount": 15.00,
     "currency": "EUR",

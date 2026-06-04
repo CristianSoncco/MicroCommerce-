@@ -58,9 +58,18 @@
 - **Resilience4j** - Circuit Breaker
 
 ### Databases
-- **PostgreSQL 16** - Product & User Services
-- **MongoDB** - Order Service (planned)
+- **PostgreSQL 16** - Product, User and Payment Services
+- **MongoDB** - Order Service
 - **Redis 7** - Distributed Cache
+
+### Messaging
+- **RabbitMQ 3.13** - Event-Driven Communication (Order <-> Payment)
+
+### Observability | Observabilidad
+- **Elasticsearch 8.12** - Log storage and indexing
+- **Logstash 8.12** - Log ingestion pipeline
+- **Kibana 8.12** - Log visualization UI
+- **logstash-logback-encoder** - JSON log shipping from Spring Boot
 
 ### Build & Deploy
 - **Maven 3.9+** - Build tool
@@ -80,11 +89,11 @@
 |--------------|--------|---------------|--------|-------------|
 | **Eureka Server** | 8761 | - | [COMPLETO] | Service Discovery |
 | **Config Server** | 8888 | Git (local) | [COMPLETO] | Configuration Management |
-| **API Gateway** | 8080 | - | [COMPLETO] | Routing & Load Balancing |
+| **API Gateway** | 8080 | - | [COMPLETO] | Routing, Load Balancing y JWT validation |
 | **Product Service** | 8081 | PostgreSQL + Redis | [COMPLETO] | Product Catalog Management |
-| **Order Service** | 8082 | PostgreSQL (5433) | [EN DESARROLLO] | Order Processing & Orchestration |
-| **User Service** | 8083 | PostgreSQL | [PENDIENTE] | User & Authentication |
-| **Payment Service** | 8084 | External API | [PENDIENTE] | Payment Processing |
+| **Order Service** | 8082 | MongoDB + RabbitMQ | [OPERATIVO] | Order Processing, Querying and Event Consumption |
+| **User Service** | 8083 | PostgreSQL | [OPERATIVO] | User Registration, Login and JWT |
+| **Payment Service** | 8084 | PostgreSQL + Stripe + RabbitMQ | [OPERATIVO] | Payment Processing and Event Publishing |
 
 ---
 
@@ -98,7 +107,7 @@
 - **PostgreSQL 16** (o usar Docker)
 - **Redis 7** (o usar Docker)
 
-### Paso 1: Iniciar Infraestructura (PostgreSQL + Redis)
+### Paso 1: Iniciar Infraestructura
 
 **IMPORTANTE:** Antes de ejecutar Docker Compose, configura las variables de entorno:
 
@@ -110,7 +119,7 @@ cp .env.example .env
 # 2. Edita .env y cambia las credenciales (especialmente para producción)
 # El archivo .env NO se sube a Git (está en .gitignore)
 
-# 3. Inicia los servicios
+# 3. Inicia los servicios de infraestructura
 docker-compose -f docker-compose-dev.yml up -d
 ```
 
@@ -126,6 +135,7 @@ mvn spring-boot:run
 ### Paso 3: Iniciar Config Server
 
 ```bash
+$env:GIT_BRANCH="feat/22-centralized-logging-elk"   # PowerShell en local, opcional
 cd config-server
 mvn spring-boot:run
 ```
@@ -151,6 +161,31 @@ mvn spring-boot:run
 **Verificar:** http://localhost:8081/actuator/health
 
 **Swagger UI:** http://localhost:8081/swagger-ui.html
+
+### Paso 6: Iniciar Servicios Restantes
+
+```bash
+cd user-service && mvn spring-boot:run
+cd order-service && mvn spring-boot:run
+cd payment-service && mvn spring-boot:run
+```
+
+**Verificar:**
+- User Service: http://localhost:8083/actuator/health
+- Order Service: http://localhost:8082/actuator/health
+- Payment Service: http://localhost:8084/actuator/health
+
+### Paso 7: Activar ELK para un Microservicio
+
+```powershell
+$env:LOGSTASH_ENABLED="true"
+$env:LOGSTASH_HOST="localhost"
+$env:LOGSTASH_PORT="5000"
+cd order-service
+mvn spring-boot:run
+```
+
+**Nota:** Para ver logs en Kibana, cada microservicio debe iniciarse con `LOGSTASH_ENABLED=true` cuando Logstash ya este levantado.
 
 ---
 
@@ -214,26 +249,59 @@ MicroCommerce/
 
 ### [EN DESARROLLO] | In Development
 
-- **Order Service** (Commit 9/12 completado)
-  -  Entidades Order y OrderItem
-  -  Repositorios JPA con queries personalizadas
-  -  DTOs con validación
-  -  Service Layer con Resilience4j (próximo)
-  -  REST Controller
-  -  Tests unitarios e integración
+- **Order Service**
+  - Creacion y consulta de pedidos
+  - Persistencia en MongoDB
+  - Consumo de eventos de pago via RabbitMQ
+  - Cambio automatico de `PENDING` a `PAID` con `PAYMENT_COMPLETED`
+  - Pendiente: ampliar cobertura de tests y revisar observabilidad completa
 
-###  [PRÓXIMOS] | Next
+- **User Service**
+  - Registro de usuarios
+  - Login
+  - Emision de JWT
+  - Integracion con gateway validada
+  - Pendiente: ampliar cobertura de tests y revisar documentacion global asociada
 
-- User Service con autenticación JWT
-- Payment Service con API externa
-- Event-driven architecture con RabbitMQ
-- Payment Service con integración externa
-- Tests unitarios e integración
+- **Payment Service**
+  - Creacion y consulta de pagos
+  - Integracion con Stripe en entorno local
+  - Publicacion de eventos `payment.*`
+  - Pendiente: estabilizacion tecnica interna y limpieza de compilacion del modulo
+
+### [IMPLEMENTADO] Event-Driven con RabbitMQ
+
+- Exchanges topic: `orders.exchange`, `payments.exchange`
+- Eventos publicados por **Order Service**:
+  - `ORDER_CREATED` (routing key `order.created`)
+  - `ORDER_CANCELLED` (routing key `order.cancelled`)
+- Eventos publicados por **Payment Service**:
+  - `PAYMENT_COMPLETED` (routing key `payment.completed`)
+  - `PAYMENT_FAILED` (routing key `payment.failed`)
+  - `PAYMENT_REFUNDED` (routing key `payment.refunded`)
+- **Order Service** consume `payment.#` y actualiza el pedido a `PAID` cuando recibe `PAYMENT_COMPLETED`
+- Serializacion JSON via `Jackson2JsonMessageConverter`
+- Dead Letter Queue para eventos de pago rechazados
+- RabbitMQ Management UI: http://localhost:15672 (guest/guest)
+- Flujo validado en runtime: `payment.completed` actualiza el pedido a `PAID`
+
+### [IMPLEMENTADO PARCIALMENTE] | Partially Implemented
+
+- **Centralized Logging with ELK**
+  - Logstash operativo
+  - Elasticsearch operativo
+  - Kibana operativo
+  - Ingesta validada al menos para `order-service`
+  - Pendiente: validar todos los microservicios relevantes con `LOGSTASH_ENABLED=true`
+
+### [PROXIMOS] | Next
+
+- Monitoring con Prometheus y Grafana
+- API Versioning
 - Despliegue en Kubernetes
 - CI/CD Pipeline
 
 ---
-
 ## Endpoints Principales | Main Endpoints
 
 ### Product Service (via Gateway)
@@ -337,12 +405,87 @@ Consulta `.env.example` para ver todas las variables requeridas y su descripcion
 
 ---
 
+## Centralized Logging | Logging Centralizado (ELK)
+
+**ES:** MicroCommerce integra el stack ELK (Elasticsearch, Logstash, Kibana) para centralizar los logs de todos los microservicios. Los servicios envian logs estructurados en JSON a Logstash mediante `logstash-logback-encoder`.
+
+**EN:** MicroCommerce integrates the ELK stack (Elasticsearch, Logstash, Kibana) to centralize logs from every microservice. Services emit structured JSON logs to Logstash via `logstash-logback-encoder`.
+
+### Activacion | Enable
+
+```bash
+# 1. Arrancar el stack ELK
+docker-compose -f docker-compose-dev.yml up -d elasticsearch logstash kibana
+
+# 2. Exportar variables y arrancar los microservicios
+export LOGSTASH_ENABLED=true
+export LOGSTASH_HOST=localhost
+export LOGSTASH_PORT=5000
+```
+
+**ES:** `LOGSTASH_ENABLED` no hace que los servicios ya arrancados empiecen a enviar logs por si solos. Cada microservicio debe iniciarse en una terminal donde esas variables ya esten definidas.
+
+**EN:** `LOGSTASH_ENABLED` does not make already running services start shipping logs automatically. Each microservice must be started in a terminal where those variables are already defined.
+
+**PowerShell (Windows):**
+
+```powershell
+$env:LOGSTASH_ENABLED="true"
+$env:LOGSTASH_HOST="localhost"
+$env:LOGSTASH_PORT="5000"
+cd order-service
+mvn spring-boot:run
+```
+
+### Kibana Data View
+
+**ES:**
+1. Abre `http://localhost:5601`
+2. Ve a `Stack Management -> Data Views`
+3. Pulsa `Create data view`
+4. Usa el patron `microcommerce-*`
+5. Selecciona `@timestamp` como campo temporal
+
+**EN:**
+1. Open `http://localhost:5601`
+2. Go to `Stack Management -> Data Views`
+3. Click `Create data view`
+4. Use the pattern `microcommerce-*`
+5. Select `@timestamp` as the time field
+
+### Verificacion | Verification
+
+```bash
+# Elasticsearch indexes
+curl "http://localhost:9200/_cat/indices/microcommerce-*?v"
+```
+
+```powershell
+# PowerShell
+Invoke-WebRequest "http://localhost:9200/_cat/indices/microcommerce-*?v" -UseBasicParsing
+```
+
+**ES:** Si no aparecen indices `microcommerce-*`, normalmente significa que el servicio no se inicio con `LOGSTASH_ENABLED=true` o que Logstash no estaba levantado al arrancarlo.
+
+**EN:** If `microcommerce-*` indices do not appear, it usually means the service was not started with `LOGSTASH_ENABLED=true` or Logstash was not up when the service started.
+
+### Endpoints
+
+- Elasticsearch: http://localhost:9200
+- Kibana: http://localhost:5601
+- Logstash (TCP input): localhost:5000
+
+Mas detalles en [elk/README.md](./elk/README.md).
+
+---
+
 ## Documentación Adicional | Additional Documentation
 
 - [Product Service README](./product-service/README.md)
 - [Eureka Server README](./eureka-server/README.md)
 - [Config Server README](./config-server/README.md)
 - [API Gateway README](./api-gateway/README.md)
+- [ELK Centralized Logging](./elk/README.md)
 - [Architecture Documentation](./MICROSERVICES_ARCHITECTURE.md)
 
 ---
@@ -375,3 +518,4 @@ MIT License - ver [LICENSE](LICENSE) para más detalles.
 ---
 
 **Si te gusta este proyecto, dale una estrella! | If you like this project, give it a star!**
+

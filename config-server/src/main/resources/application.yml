@@ -10,7 +10,7 @@ spring:
         git:
           uri: file://${user.dir}/..
           search-paths: config
-          default-label: ${GIT_BRANCH:feat/infrastructure}
+          default-label: ${GIT_BRANCH:feat/22-centralized-logging-elk}
           clone-on-start: true
 
 eureka:

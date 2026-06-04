@@ -1,4 +1,4 @@
-# Configuración para Order Service
+# Configuracion para Order Service
 # Configuration for Order Service
 
 server:
@@ -7,15 +7,15 @@ server:
 spring:
   application:
     name: order-service
-  datasource:
-    url: jdbc:postgresql://localhost:5433/orderdb
-    username: postgres
-    password: postgres
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/orderdb
+      auto-index-creation: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 resilience4j:
   circuitbreaker:
@@ -37,4 +37,3 @@ management:
     web:
       exposure:
         include: health,info,metrics,prometheus
-

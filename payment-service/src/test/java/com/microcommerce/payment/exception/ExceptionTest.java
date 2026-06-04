@@ -52,7 +52,7 @@ class ExceptionTest {
     void paymentAlreadyProcessedException_WithOrderId_ContainsOrderIdInMessage() {
         // When
         PaymentAlreadyProcessedException exception =
-                new PaymentAlreadyProcessedException(100L);
+                new PaymentAlreadyProcessedException("100");
 
         // Then
         assertThat(exception.getMessage()).contains("100");

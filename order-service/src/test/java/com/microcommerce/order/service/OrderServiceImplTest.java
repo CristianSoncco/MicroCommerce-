@@ -5,6 +5,7 @@ import com.microcommerce.order.dto.OrderItemDTO;
 import com.microcommerce.order.entity.Order;
 import com.microcommerce.order.entity.Order.OrderStatus;
 import com.microcommerce.order.entity.OrderItem;
+import com.microcommerce.order.event.OrderEventPublisher;
 import com.microcommerce.order.exception.EmptyOrderException;
 import com.microcommerce.order.exception.InvalidOrderStatusException;
 import com.microcommerce.order.exception.OrderNotFoundException;
@@ -42,6 +43,9 @@ class OrderServiceImplTest {
 
     @Mock
     private OrderMapper orderMapper;
+
+    @Mock
+    private OrderEventPublisher orderEventPublisher;
 
     @InjectMocks
     private OrderServiceImpl orderService;

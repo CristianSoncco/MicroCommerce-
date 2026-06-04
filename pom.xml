@@ -34,6 +34,7 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <testcontainers.version>1.19.3</testcontainers.version>
         <resilience4j.version>2.2.0</resilience4j.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
     </properties>
 
     <dependencyManagement>
@@ -87,6 +88,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- Logstash Logback Encoder for centralized ELK logging -->
+            <!-- Encoder de Logback para envio de logs JSON a Logstash (ELK) -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -116,5 +125,14 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <dependencies>
+        <!-- Required by Logback conditional processing used in logback-spring.xml -->
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>3.1.12</version>
+        </dependency>
+    </dependencies>
 </project>
 

@@ -15,11 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.MethodParameter;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
+import java.lang.reflect.Method;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -38,9 +40,13 @@ class GlobalExceptionHandlerTest {
     @Mock
     private HttpServletRequest request;
 
+    private MethodParameter methodParameter;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws NoSuchMethodException {
         when(request.getRequestURI()).thenReturn("/api/payments");
+        Method method = PaymentControllerStub.class.getDeclaredMethod("handle", Object.class);
+        methodParameter = new MethodParameter(method, 0);
     }
 
     @Test
@@ -65,7 +71,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("handlePaymentAlreadyProcessedException - debe retornar 409 CONFLICT")
     void handlePaymentAlreadyProcessedException_Returns409() {
         // Given
-        PaymentAlreadyProcessedException ex = new PaymentAlreadyProcessedException(100L);
+        PaymentAlreadyProcessedException ex = new PaymentAlreadyProcessedException("100");
 
         // When
         ResponseEntity<ErrorResponse> response =
@@ -127,7 +133,7 @@ class GlobalExceptionHandlerTest {
         when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
 
         MethodArgumentNotValidException ex =
-                new MethodArgumentNotValidException(null, bindingResult);
+                new MethodArgumentNotValidException(methodParameter, bindingResult);
 
         // When
         ResponseEntity<ErrorResponse> response =
@@ -157,5 +163,11 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getStatus()).isEqualTo(500);
         assertThat(response.getBody().getError()).isEqualTo("Error interno del servidor");
+    }
+
+    private static class PaymentControllerStub {
+        @SuppressWarnings("unused")
+        void handle(Object body) {
+        }
     }
 }
